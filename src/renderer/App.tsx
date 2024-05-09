@@ -1,4 +1,4 @@
-import { MemoryRouter as Router, Route, Routes } from 'react-router-dom';
+import { useRoutes } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import './App.css';
 import 'tailwindcss/tailwind.css';
@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import zhCN from 'antd/locale/zh_CN';
 import icon from '../../assets/icon.svg';
+import routes from './config/routes';
 
 dayjs.locale('zh-cn');
 
@@ -47,13 +48,6 @@ function Hello() {
 }
 
 export default function App() {
-  return (
-    <ConfigProvider locale={zhCN}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Hello />} />
-        </Routes>
-      </Router>
-    </ConfigProvider>
-  );
+  const element = useRoutes(routes);
+  return <ConfigProvider locale={zhCN}>{element}</ConfigProvider>;
 }
