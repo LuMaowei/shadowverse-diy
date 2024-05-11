@@ -4,9 +4,11 @@ export type DataInterface = {
   close: () => Promise<void>;
   removeDB: () => Promise<void>;
   getTableNames: () => Promise<any>;
-  getRoles: (params: any) => Promise<any>;
-  setRole: (params: any) => void;
-  deleteRole: (params: any) => void;
+  getRoles: (
+    params: DB.Role & { pageSize?: number; current?: number },
+  ) => Promise<any>;
+  setRole: (params: DB.Role) => void;
+  deleteRole: (params: DB.Role) => void;
 };
 
 export type ClientInterface = DataInterface & {

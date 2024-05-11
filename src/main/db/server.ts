@@ -61,6 +61,7 @@ function migrateSchemaVersion(db: Database) {
   setUserVersion(db, newUserVersion);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function openAndMigrateDatabase(filePath: string, key: string) {
   let db: Database | undefined;
 
@@ -199,17 +200,16 @@ async function getPagedData({
   const offset = (current - 1) * pageSize;
 
   // 获取当前页的数据
-  const list = getRows(pageSize, offset);
+  const data = getRows(pageSize, offset);
 
   // 获取总记录数
   const total = getCount();
 
   // 返回分页数据
   return {
-    current,
-    pageSize,
+    success: true,
     total,
-    list,
+    data,
   };
 }
 
@@ -226,8 +226,8 @@ async function getRoles({
   roleKeyword?: string;
   roleName?: string;
   roleColor?: string;
-  current: number;
-  pageSize: number;
+  current?: number;
+  pageSize?: number;
 }): Promise<any> {
   const db = getInstance();
 
@@ -270,15 +270,7 @@ function setRole({
   roleIcon,
   roleAvatar,
   cardBackground,
-}: {
-  id?: number;
-  roleKeyword?: string;
-  roleName?: string;
-  roleColor?: string;
-  roleIcon?: string;
-  roleAvatar?: string;
-  cardBackground?: string;
-}): void {
+}: DB.Role): void {
   const db = getInstance();
   db.prepare(
     `
@@ -297,7 +289,7 @@ function setRole({
 }
 
 // 删除职业
-function deleteRole({ id }: { id: number }) {
+function deleteRole({ id }: { id?: number }) {
   const db = getInstance();
   db.prepare(
     `

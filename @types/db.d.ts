@@ -1,23 +1,13 @@
 declare global {
   namespace DB {
-    interface UserAttributes {
+    interface Role {
       id?: number;
-      userId: number;
-      account: string;
-      token: string;
-      avatar?: string;
-      email?: string;
-      regisTime: string;
-      updateTime: string;
-    }
-
-    interface UserInfo {
-      id: number;
-      account: string;
-      avatar?: string;
-      email?: string;
-      regisTime: string;
-      updateTime: string;
+      roleKeyword?: string;
+      roleName?: string;
+      roleColor?: string;
+      roleIcon?: string;
+      roleAvatar?: string;
+      cardBackground?: string;
     }
   }
 }

@@ -1,0 +1,8 @@
+header {
+  -webkit-app-region: drag;
+
+  span, button {
+    -webkit-app-region: no-drag;
+  }
+}
+
