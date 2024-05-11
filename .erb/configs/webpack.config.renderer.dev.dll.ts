@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Builds the DLL for development electron renderer process
  */

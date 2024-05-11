@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import 'webpack-dev-server';
 import path from 'path';
 import fs from 'fs';

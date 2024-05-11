@@ -1,6 +1,9 @@
 // Disable no-unused-vars, broken for spread args
-/* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import sqlClient from './db/client';
+
+const { close, removeDB, getTableNames, getRoles, setRole, deleteRole } =
+  sqlClient;
 
 export type Channels = 'ipc-example';
 
@@ -24,6 +27,21 @@ const electronHandler = {
   },
 };
 
+const contextHandler = {
+  platform: process.platform,
+  NODE_ENV: process.env.NODE_ENV,
+  ROOT_PATH: window.location.href.startsWith('file') ? '../../' : '/',
+  sqlClient: {
+    close,
+    removeDB,
+    getTableNames,
+    getRoles,
+    setRole,
+    deleteRole,
+  },
+};
+
 contextBridge.exposeInMainWorld('electron', electronHandler);
+contextBridge.exposeInMainWorld('Context', contextHandler);
 
 export type ElectronHandler = typeof electronHandler;

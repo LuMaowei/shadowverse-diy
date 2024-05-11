@@ -4,6 +4,7 @@ import path from 'path';
 import webpack from 'webpack';
 import { merge } from 'webpack-merge';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+import CopyPlugin from 'copy-webpack-plugin';
 import baseConfig from './webpack.config.base';
 import webpackPaths from './webpack.paths';
 import checkNodeEnv from '../scripts/check-node-env';
@@ -14,21 +15,22 @@ if (process.env.NODE_ENV === 'production') {
   checkNodeEnv('development');
 }
 
+const mainWorkerPath = path.join(webpackPaths.srcBDPath, 'mainWorker.ts');
+
 const configuration: webpack.Configuration = {
   devtool: 'inline-source-map',
 
   mode: 'development',
 
-  target: 'electron-preload',
+  target: 'electron-main',
 
-  entry: path.join(webpackPaths.srcMainPath, 'preload.ts'),
+  entry: {
+    mainWorker: mainWorkerPath,
+  },
 
   output: {
     path: webpackPaths.dllPath,
-    filename: 'preload.js',
-    library: {
-      type: 'umd',
-    },
+    filename: '[name].js',
   },
 
   plugins: [
@@ -54,6 +56,23 @@ const configuration: webpack.Configuration = {
 
     new webpack.LoaderOptionsPlugin({
       debug: true,
+    }),
+
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.join(webpackPaths.appNodeModulesPath, 'better-sqlite3'),
+          to: 'node_modules/better-sqlite3', // still under node_modules directory so it could find this module
+        },
+        {
+          from: path.join(webpackPaths.appNodeModulesPath, 'bindings'),
+          to: 'node_modules/bindings', // still under node_modules directory so it could find this module
+        },
+        {
+          from: path.join(webpackPaths.appNodeModulesPath, 'file-uri-to-path'),
+          to: 'node_modules/file-uri-to-path', // still under node_modules directory so it could find this module
+        },
+      ],
     }),
   ],
 

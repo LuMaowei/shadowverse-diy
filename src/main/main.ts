@@ -12,8 +12,12 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { userInfo } from 'node:os';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import MainSQL from './db/main';
+import SQLChannelsInitialize from './SQLChannel';
+import Logging from './logging';
 
 class AppUpdater {
   constructor() {
@@ -24,6 +28,31 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+
+const { getLogger } = Logging();
+const logger = getLogger();
+const sql = new MainSQL();
+
+async function initializeSQL(userDataPath: string) {
+  const key = userInfo().username;
+  if (!key) {
+    logger.info(
+      'key/initialize: Generating new encryption key, since we did not find it on disk',
+    );
+  }
+  try {
+    await sql.initialize({ configDir: userDataPath, key, logger });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { ok: false, error };
+    }
+    return {
+      ok: false,
+      error: new Error(`initializeSQL: Caught a non-error '${error}'`),
+    };
+  }
+  return { ok: true, error: undefined };
+}
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -126,7 +155,23 @@ app.on('window-all-closed', () => {
 
 app
   .whenReady()
-  .then(() => {
+  .then(async () => {
+    const userDataPath = app.getPath('userData');
+    const sqlInitPromise = initializeSQL(userDataPath);
+    const timeout = new Promise((resolve) => {
+      setTimeout(resolve, 3000, 'timeout');
+    });
+
+    Promise.race([sqlInitPromise, timeout]).catch((err) => console.error(err));
+
+    const { error: sqlError } = await sqlInitPromise;
+    console.log(sqlError);
+    if (sqlError) {
+      return;
+    }
+
+    SQLChannelsInitialize(sql);
+
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
