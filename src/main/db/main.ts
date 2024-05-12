@@ -2,8 +2,8 @@ import { join } from 'path';
 import { Worker } from 'worker_threads';
 import { app } from 'electron';
 import { format } from 'util';
-import type { LogLevel, ElectronLog } from 'electron-log';
-import strictAssert from '../assert';
+import type { ElectronLog, LogLevel } from 'electron-log';
+import strictAssert from '../utils/assert';
 import type { ServerInterface } from './types';
 
 const MIN_TRACE_DURATION = 40;

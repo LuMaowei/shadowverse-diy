@@ -1,5 +1,5 @@
 import { explodePromise } from './explodePromise';
-import Logging from '../LogForRenderer';
+import Logging from './LogForRenderer';
 import toLogFormat from './errors';
 
 export const SECOND = 1000;

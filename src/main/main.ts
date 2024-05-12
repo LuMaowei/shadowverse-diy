@@ -9,15 +9,15 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { userInfo } from 'node:os';
-import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import MainSQL from './db/main';
-import SQLChannelsInitialize from './SQLChannel';
-import Logging from './logging';
+import SQLChannelsInitialize from './db/SQLChannel';
+import Logging from './utils/logging';
+import windowController from './windowController';
 
 class AppUpdater {
   constructor() {
@@ -134,6 +134,8 @@ const createWindow = async () => {
     return { action: 'deny' };
   });
 
+  windowController(mainWindow);
+
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
@@ -163,7 +165,6 @@ app
     Promise.race([sqlInitPromise, timeout]).catch((err) => console.error(err));
 
     const { error: sqlError } = await sqlInitPromise;
-    console.log(sqlError);
     if (sqlError) {
       return;
     }

@@ -1,17 +1,8 @@
-// @ts-ignore
 import type { Database } from 'better-sqlite3';
 import { isNumber } from 'lodash';
 
 // This value needs to be below SQLITE_MAX_VARIABLE_NUMBER.
 const MAX_VARIABLE_COUNT = 100;
-
-export function objectToJSON<T>(data: T): string {
-  return JSON.stringify(data);
-}
-
-export function jsonToObject<T>(json: string): T {
-  return JSON.parse(json);
-}
 
 export function getSQLiteVersion(db: Database): string {
   const { sqlite_version: version } = db
@@ -50,12 +41,14 @@ export function batchMultiVarQuery<ValueT>(
   query: (batch: ReadonlyArray<ValueT>) => void,
 ): [];
 
+// eslint-disable-next-line no-redeclare
 export function batchMultiVarQuery<ValueT, ResultT>(
   db: Database,
   values: ReadonlyArray<ValueT>,
   query: (batch: ReadonlyArray<ValueT>) => Array<ResultT>,
 ): Array<ResultT>;
 
+// eslint-disable-next-line no-redeclare
 export function batchMultiVarQuery<ValueT, ResultT>(
   db: Database,
   values: ReadonlyArray<ValueT>,

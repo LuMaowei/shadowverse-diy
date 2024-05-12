@@ -1,6 +1,6 @@
 import { get, has } from 'lodash';
 import { doShutdown, ipcInvoke } from './channels';
-import Logging from '../LogForRenderer';
+import Logging from '../utils/LogForRenderer';
 
 import type { ClientInterface, ServerInterface } from './types';
 

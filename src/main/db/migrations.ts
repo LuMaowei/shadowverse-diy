@@ -1,4 +1,3 @@
-// @ts-ignore
 import type { Database } from 'better-sqlite3';
 import type { LogFunctions } from 'electron-log';
 import {
@@ -6,7 +5,7 @@ import {
   getSQLCipherVersion,
   getSQLiteVersion,
   getUserVersion,
-} from '../util';
+} from './util';
 
 function updateToSchemaVersion1(
   currentVersion: number,
@@ -71,7 +70,7 @@ function updateToSchemaVersion2(
 
 export const SCHEMA_VERSIONS = [updateToSchemaVersion1];
 
-export function updateSchema(
+export default function updateSchema(
   db: Database,
   logger: Omit<LogFunctions, 'log'>,
 ): void {

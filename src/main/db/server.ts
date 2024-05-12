@@ -1,12 +1,10 @@
 import { join } from 'path';
 import { ensureDirSync, removeSync } from 'fs-extra';
-// @ts-ignore
 import type { Database, Statement } from 'better-sqlite3';
-// @ts-ignore
 import SQL from 'better-sqlite3';
 import { isString } from 'lodash';
 import type { LogFunctions } from 'electron-log';
-import { updateSchema } from './migrations';
+import updateSchema from './migrations';
 import consoleLogger from '../utils/consoleLogger';
 import { getSchemaVersion, getUserVersion, setUserVersion } from './util';
 import type { ServerInterface } from './types';
@@ -19,6 +17,7 @@ type DatabaseQueryCache = Map<string, Statement<Array<unknown>>>;
 
 const statementCache = new WeakMap<Database, DatabaseQueryCache>();
 
+// 创建并缓存预编译的sql语句
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function prepare<T extends unknown[] | {}>(
   db: Database,
@@ -61,15 +60,14 @@ function migrateSchemaVersion(db: Database) {
   setUserVersion(db, newUserVersion);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function openAndMigrateDatabase(filePath: string, key: string) {
+function openAndMigrateDatabase(filePath: string) {
   let db: Database | undefined;
 
   try {
     db = new SQL(filePath);
     switchToWAL(db);
     migrateSchemaVersion(db);
-
+    db.pragma('foreign_keys = ON');
     return db;
   } catch (error) {
     logger.error(error);
@@ -80,35 +78,17 @@ function openAndMigrateDatabase(filePath: string, key: string) {
   }
 }
 
-const INVALID_KEY = /[^0-9A-Za-z]/;
-
-function openAndSetUpSQLCipher(filePath: string, { key }: { key: string }) {
-  if (INVALID_KEY.exec(key))
-    throw new Error(`setupSQLCipher: key '${key}' is not valid`);
-
-  const db = openAndMigrateDatabase(filePath, key);
-
-  // Because foreign key support is not enabled by default!
-  db.pragma('foreign_keys = ON');
-
-  return db;
-}
-
 async function initialize({
   configDir,
-  key,
   logger: suppliedLogger,
 }: {
   configDir: string;
-  key: string;
   logger: Omit<LogFunctions, 'log'>;
 }): Promise<void> {
   if (globalInstance) throw new Error('Cannot initialize more than once!');
 
   if (!isString(configDir))
     throw new Error('initialize: configDir is required!');
-
-  if (!isString(key)) throw new Error('initialize: key is required!');
 
   logger = suppliedLogger;
 
@@ -123,7 +103,7 @@ async function initialize({
   let db: Database | undefined;
 
   try {
-    db = openAndSetUpSQLCipher(databaseFilePath, { key });
+    db = openAndMigrateDatabase(databaseFilePath);
 
     updateSchema(db, logger);
 
@@ -138,6 +118,7 @@ async function initialize({
   }
 }
 
+// 关闭数据库
 async function close(): Promise<void> {
   // SQLLite documentation suggests that we run `PRAGMA optimize` right
   // before closing the database connection.
@@ -148,6 +129,7 @@ async function close(): Promise<void> {
   globalInstance = undefined;
 }
 
+// 关闭并清空数据库文件
 async function removeDB(): Promise<void> {
   if (globalInstance) {
     try {
@@ -179,12 +161,7 @@ function getInstance(): Database {
   return globalInstance;
 }
 
-function getTableNames(): Promise<any> {
-  const db = getInstance();
-
-  return db.prepare("SELECT name FROM sqlite_master WHERE type='table';").all();
-}
-
+// 获取符合antd-pro-table分页化数据结构的数据
 async function getPagedData({
   current,
   pageSize,
@@ -196,16 +173,10 @@ async function getPagedData({
   getRows: (limit: number, offset: number) => any[];
   getCount: () => number;
 }) {
-  // 计算偏移量
   const offset = (current - 1) * pageSize;
-
-  // 获取当前页的数据
   const data = getRows(pageSize, offset);
-
-  // 获取总记录数
   const total = getCount();
 
-  // 返回分页数据
   return {
     success: true,
     total,
@@ -221,7 +192,7 @@ async function getRoles({
   roleName,
   roleColor,
   current = 1,
-  pageSize = 20,
+  pageSize = 10,
 }: {
   roleKeyword?: string;
   roleName?: string;
@@ -253,10 +224,15 @@ async function getRoles({
     current,
     pageSize,
     getRows: (limit, offset) => {
-      return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset);
+      return db
+        .prepare(`${sql} LIMIT ? OFFSET ?`)
+        .all(limit, offset, { roleKeyword, roleName, roleColor });
     },
     getCount: () => {
-      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get()['COUNT(*)'];
+      // @ts-ignore
+      return db
+        .prepare(`SELECT COUNT(*) FROM (${sql})`)
+        .get({ roleKeyword, roleName, roleColor })['COUNT(*)'];
     },
   });
 }
@@ -303,7 +279,6 @@ const dataInterface: ServerInterface = {
   close,
   removeDB,
   initialize,
-  getTableNames,
   getRoles,
   setRole,
   deleteRole,

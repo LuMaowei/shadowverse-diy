@@ -3,7 +3,6 @@ import type { LogFunctions } from 'electron-log';
 export type DataInterface = {
   close: () => Promise<void>;
   removeDB: () => Promise<void>;
-  getTableNames: () => Promise<any>;
   getRoles: (
     params: DB.Role & { pageSize?: number; current?: number },
   ) => Promise<any>;
@@ -13,13 +12,11 @@ export type DataInterface = {
 
 export type ClientInterface = DataInterface & {
   // Client-side only
-
   shutdown: () => Promise<void>;
 };
 
 export type ServerInterface = DataInterface & {
   // Server-side only
-
   initialize: (options: {
     configDir: string;
     key: string;

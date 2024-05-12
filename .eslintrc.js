@@ -16,6 +16,9 @@ module.exports = {
     'promise/catch-or-return': 'off',
     'promise/always-return': 'off',
     'no-undef': 'off',
+    'consistent-return': 'off',
+    'promise/param-names': 'off',
+    'react/no-unstable-nested-components': 'off',
   },
   parserOptions: {
     ecmaVersion: 2022,

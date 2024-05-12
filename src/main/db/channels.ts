@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import Logging from '../LogForRenderer';
+import Logging from '../utils/LogForRenderer';
 import createTaskWithTimeout from '../utils/taskWithTimeout';
 import { explodePromise } from '../utils/explodePromise';
 
@@ -37,7 +37,6 @@ export async function ipcInvoke(
   }, `SQL channel call (${fnName})`)();
 }
 
-// eslint-disable-next-line consistent-return
 export async function doShutdown(): Promise<void> {
   log.info(
     `data.shutdown: shutdown requested. ${activeJobCount} jobs outstanding`,
@@ -49,7 +48,6 @@ export async function doShutdown(): Promise<void> {
 
   // No outstanding jobs, return immediately
   if (activeJobCount === 0) {
-    // eslint-disable-next-line consistent-return
     return;
   }
 

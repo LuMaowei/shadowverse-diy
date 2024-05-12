@@ -1,15 +1,44 @@
 import {
-  GithubFilled,
-  InfoCircleFilled,
-  QuestionCircleFilled,
+  BorderOutlined,
+  CloseOutlined,
+  MinusOutlined,
+  MinusSquareOutlined,
 } from '@ant-design/icons';
 import { PageContainer, ProCard, ProLayout } from '@ant-design/pro-components';
-import { JSX } from 'react';
+import { JSX, useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Button } from 'antd';
 import menu from '../config/menu';
 
 export default function MainLayout(): JSX.Element {
   const { pathname } = useLocation();
+  const [isMaximized, setIsMaximized] = useState<boolean>(false);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('isMaximized', (data: boolean) => {
+      setIsMaximized(data);
+    });
+  }, []);
+
+  const onActionClick = (action: string) => {
+    let channel;
+    switch (action) {
+      case 'minimize':
+        channel = 'window:minimize';
+        break;
+      case 'maximize':
+        channel = 'window:maximize';
+        break;
+      case 'close':
+        channel = 'window:close';
+        break;
+      default:
+        break;
+    }
+    if (channel) {
+      window.electron.ipcRenderer.sendMessage(channel);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -26,11 +55,6 @@ export default function MainLayout(): JSX.Element {
         }}
         menuItemRender={(item, dom) => <Link to={item.path || ''}>{dom}</Link>}
         breadcrumbRender={false}
-        avatarProps={{
-          src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-          size: 'small',
-          title: '七妮妮',
-        }}
         bgLayoutImgList={[
           {
             src: 'https://img.alicdn.com/imgextra/i2/O1CN01O4etvp1DvpFLKfuWq_!!6000000000279-2-tps-609-606.png',
@@ -105,9 +129,25 @@ export default function MainLayout(): JSX.Element {
         ]}
         actionsRender={() => {
           return [
-            <InfoCircleFilled key="InfoCircleFilled" />,
-            <QuestionCircleFilled key="QuestionCircleFilled" />,
-            <GithubFilled key="GithubFilled" />,
+            <Button
+              key="minimize"
+              type="text"
+              icon={<MinusOutlined />}
+              onClick={() => onActionClick('minimize')}
+            />,
+            <Button
+              key="maximize"
+              type="text"
+              icon={isMaximized ? <MinusSquareOutlined /> : <BorderOutlined />}
+              onClick={() => onActionClick('maximize')}
+            />,
+            <Button
+              key="close"
+              danger
+              type="text"
+              icon={<CloseOutlined />}
+              onClick={() => onActionClick('close')}
+            />,
           ];
         }}
       >
