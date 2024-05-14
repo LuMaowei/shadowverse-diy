@@ -16,16 +16,31 @@ const menu: Route = [
         index: true,
         path: 'role',
         name: '职业',
-        icon: 'https://gw.alipayobjects.com/zos/antfincdn/upvrAjAPQX/Logo_Tech%252520UI.svg',
+        icon: <CrownFilled />,
       },
       {
         path: 'type',
-        name: '卡片种类',
+        name: '种类',
         icon: <CrownFilled />,
       },
       {
         path: 'rarity',
         name: '稀有度',
+        icon: <CrownFilled />,
+      },
+      {
+        path: 'frame',
+        name: '框架图片',
+        icon: <CrownFilled />,
+      },
+      {
+        path: 'trait',
+        name: '兵种',
+        icon: <CrownFilled />,
+      },
+      {
+        path: 'ability',
+        name: '能力',
         icon: <CrownFilled />,
       },
     ],

@@ -1,13 +1,8 @@
 import { RouteObject } from 'react-router-dom';
 import Home from '../pages/Home';
 import MainLayout from '../layouts/MainLayout';
-import { Ability, Rarity, Role, Trait, Type } from '../pages/attributes/index';
-import {
-  CardCreate,
-  CardEdit,
-  CardPreview,
-  CardsManagement,
-} from '../pages/cards/index';
+import { Ability, Frame, Rarity, Role, Trait, Type } from '../pages/attributes/index';
+import { CardCreate, CardEdit, CardPreview, CardsManagement } from '../pages/cards/index';
 
 const routes: RouteObject[] = [
   {
@@ -42,10 +37,14 @@ const routes: RouteObject[] = [
             path: 'ability',
             element: <Ability />,
           },
+          {
+            path: 'frame',
+            element: <Frame /,
+          ,
         ],
       },
       {
-        path: '/cards',
+        '/cards',
         children: [
           {
             index: true,
@@ -67,6 +66,6 @@ const routes: RouteObject[] = [
       },
     ],
   },
-];
+]
 
 export default routes;

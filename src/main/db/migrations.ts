@@ -28,8 +28,6 @@ function updateToSchemaVersion1(
         emblem STRING,
         cardBackground STRING
       );
-
-      CREATE INDEX id ON roles (id);
     `);
 
     // 卡片种类表
@@ -39,8 +37,6 @@ function updateToSchemaVersion1(
         name STRING NOT NULL,
         label STRING NOT NULL
       );
-
-      CREATE INDEX id ON types (id);
    `);
 
     // 卡片稀有度表
@@ -48,10 +44,8 @@ function updateToSchemaVersion1(
       CREATE TABLE rarities (
         id INTEGER PRIMARY KEY,
         name STRING NOT NULL,
-        label STRING NOT NULL,
+        label STRING NOT NULL
       );
-
-      CREATE INDEX id ON rarities (id);
     `);
 
     // 卡片框架表
@@ -62,7 +56,8 @@ function updateToSchemaVersion1(
         rarityId INTEGER,
         frame STRING,
         FOREIGN KEY (typeId) REFERENCES types(id),
-        FOREIGN KEY (rarityId) REFERENCES rarities(id)
+        FOREIGN KEY (rarityId) REFERENCES rarities(id),
+        UNIQUE (typeId, rarityId)
       );
     `);
 
@@ -71,10 +66,8 @@ function updateToSchemaVersion1(
       CREATE TABLE traits (
         id INTEGER PRIMARY KEY,
         name STRING NOT NULL,
-        label STRING NOT NULL,
+        label STRING NOT NULL
       );
-
-      CREATE INDEX id ON traits (id);
     `);
 
     // 卡片能力关键字表
@@ -86,8 +79,6 @@ function updateToSchemaVersion1(
         sort INTEGER NOT NULL,
         description STRING
       );
-
-      CREATE INDEX id ON traits (id);
     `);
 
     // 卡片表
@@ -99,18 +90,19 @@ function updateToSchemaVersion1(
         traitId INTEGER,
         rarityId INTEGER,
         cost INTEGER,
-        name STRING NOT NULL,
+        name STRING,
         isToken BOOLEAN,
         tokenIds STRING,
         parentId INTEGER,
-        imagePath STRING,
+        isReborn BOOLEAN,
+        image STRING,
         FOREIGN KEY (roleId) REFERENCES roles(id),
         FOREIGN KEY (typeId) REFERENCES types(id),
         FOREIGN KEY (traitId) REFERENCES traits(id),
         FOREIGN KEY (rarityId) REFERENCES rarities(id)
       );
 
-      CREATE INDEX id ON cards (id);
+      CREATE INDEX cardId ON cards (id);
     `);
 
     // 卡片详情表
@@ -125,7 +117,7 @@ function updateToSchemaVersion1(
         FOREIGN KEY (cardId) REFERENCES cards(id)
       );
 
-      CREATE INDEX id ON cards (id);
+      CREATE INDEX cardDetailsId ON cardDetails (id);
     `);
 
     db.pragma('user_version = 1');

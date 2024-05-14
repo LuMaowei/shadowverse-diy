@@ -54,7 +54,8 @@ declare global {
       isToken?: boolean;
       tokenIds?: number[];
       parentId?: number;
-      imagePath?: string;
+      isReborn?: boolean;
+      image?: string;
     }
 
     interface CardDetails {

@@ -1,56 +1,41 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { ProTable, DrawerForm, ProFormText } from '@ant-design/pro-components';
+import { DrawerForm, ProFormText, ProTable } from '@ant-design/pro-components';
 import { Button, Form, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
-import SingleImageUpload from '../../components/SingleImageUpload';
 
 // 卡片类型
 export default function Type() {
   const actionRef = useRef<ActionType>();
-  const [form] = Form.useForm<DB.Role>();
+  const [form] = Form.useForm<DB.Type>();
   const [formOpen, setFormOpen] = useState<boolean>(false);
   const [formReadOnly, setFormReadOnly] = useState<boolean>(false);
 
-  const onCreateFinish = (values: DB.Role) => {
-    window.Context.sqlClient.setRole(values);
+  const onCreateFinish = (values: DB.Type) => {
+    window.Context.sqlClient.setType(values);
     actionRef.current?.reload();
   };
 
-  const onDelete = (id: DB.Role['id']) => {
-    window.Context.sqlClient.deleteRole({ id });
+  const onDelete = (id: DB.Type['id']) => {
+    window.Context.sqlClient.deleteType({ id });
     actionRef.current?.reload();
   };
 
-  const columns: ProColumns<DB.Role>[] = [
+  const columns: ProColumns<DB.Type>[] = [
     {
       dataIndex: 'index',
       valueType: 'indexBorder',
       width: 48,
     },
     {
-      title: '职业关键字',
+      title: '卡片类型关键字',
       dataIndex: 'name',
       ellipsis: true,
     },
     {
-      title: '职业展示名称',
+      title: '卡片类型展示名称',
       dataIndex: 'label',
       ellipsis: true,
-    },
-    {
-      title: '水晶',
-      dataIndex: 'gem',
-      search: false,
-      valueType: 'image',
-      align: 'center',
-    },
-    {
-      title: '头像',
-      dataIndex: 'checkIcon',
-      search: false,
-      valueType: 'image',
-      align: 'center',
     },
     {
       title: '操作',
@@ -82,7 +67,7 @@ export default function Type() {
           查看
         </Button>,
         <Popconfirm
-          title="你确定要删除此职业吗？"
+          title="你确定要删除此卡片类型吗？"
           onConfirm={() => onDelete(record.id)}
         >
           <Button key="delete" danger type="text">
@@ -94,11 +79,11 @@ export default function Type() {
   ];
 
   return (
-    <ProTable<DB.Role>
+    <ProTable<DB.Type>
       columns={columns}
       actionRef={actionRef}
       request={async (params) => {
-        return window.Context.sqlClient.getRoles(params);
+        return window.Context.sqlClient.getTypes(params);
       }}
       options={false}
       rowKey="id"
@@ -106,10 +91,10 @@ export default function Type() {
       pagination={{ pageSize: 10 }}
       dateFormatter="string"
       toolBarRender={() => [
-        <DrawerForm<DB.Role>
+        <DrawerForm<DB.Type>
           open={formOpen}
           onOpenChange={setFormOpen}
-          title="新建职业"
+          title="新建卡片类型"
           form={form}
           readonly={formReadOnly}
           trigger={
@@ -135,20 +120,8 @@ export default function Type() {
           }}
         >
           <ProFormText name="id" hidden />
-          <ProFormText name="name" label="职业关键字" />
-          <ProFormText name="label" label="职业展示名称" />
-          <Form.Item name="checkIcon" label="头像">
-            <SingleImageUpload disabled={formReadOnly} />
-          </Form.Item>
-          <Form.Item name="gem" label="水晶">
-            <SingleImageUpload disabled={formReadOnly} />
-          </Form.Item>
-          <Form.Item name="emblem" label="徽章">
-            <SingleImageUpload disabled={formReadOnly} />
-          </Form.Item>
-          <Form.Item name="cardBackground" label="卡片背景">
-            <SingleImageUpload disabled={formReadOnly} />
-          </Form.Item>
+          <ProFormText name="name" label="卡片类型关键字" />
+          <ProFormText name="label" label="卡片类型展示名称" />
         </DrawerForm>,
       ]}
     />

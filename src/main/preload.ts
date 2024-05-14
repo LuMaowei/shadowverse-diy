@@ -2,7 +2,34 @@ import { app, contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import path from 'path';
 import sqlClient from './db/client';
 
-const { close, removeDB, getRoles, setRole, deleteRole } = sqlClient;
+const {
+  close,
+  removeDB,
+  getRoles,
+  setRole,
+  deleteRole,
+  getTypes,
+  setType,
+  deleteType,
+  getRarities,
+  setRarity,
+  deleteRarity,
+  getFrames,
+  setFrame,
+  deleteFrame,
+  getTraits,
+  setTrait,
+  deleteTrait,
+  getAbilities,
+  setAbility,
+  deleteAbility,
+  getCards,
+  setCard,
+  deleteCard,
+  getCardDetails,
+  setCardDetails,
+  deleteCardDetails,
+} = sqlClient;
 
 const getAssetPath = (...paths: string[]): string => {
   const RESOURCES_PATH = app.isPackaged
@@ -42,6 +69,27 @@ const contextHandler = {
     getRoles,
     setRole,
     deleteRole,
+    getTypes,
+    setType,
+    deleteType,
+    getRarities,
+    setRarity,
+    deleteRarity,
+    getFrames,
+    setFrame,
+    deleteFrame,
+    getTraits,
+    setTrait,
+    deleteTrait,
+    getAbilities,
+    setAbility,
+    deleteAbility,
+    getCards,
+    setCard,
+    deleteCard,
+    getCardDetails,
+    setCardDetails,
+    deleteCardDetail,
   },
 };
 
