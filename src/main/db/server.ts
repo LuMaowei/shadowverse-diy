@@ -511,13 +511,13 @@ function setFrame({ id, typeId, rarityId, frame }: DB.Frame): void {
     `
     UPDATE frames
     SET frame = $frame
-    WHERE id = $id AND typeId = $typeId AND rarityId = $rarityI
+    WHERE id = $id AND typeId = $typeId AND rarityId = $rarityId
   `,
   ).run({
     id,
     typeId,
     rarityId,
-    rame,
+    frame,
   });
 }
 
@@ -526,7 +526,7 @@ function deleteFrame({ id }: { id?: number }) {
   db.prepare(
     `
     DELETE FROM frames
-    WHERE id = $i
+    WHERE id = $id
   `,
   ).run({ id });
 }
@@ -584,12 +584,12 @@ function setTrait({ id, name, label }: DB.Trait): void {
   db.prepare(
     `
     INSERT OR REPLACE INTO traits (id, name, label)
-    VALUES ($id, $name, $label
+    VALUES ($id, $name, $label)
   `,
   ).run({
     id,
     name,
-    abel,
+    label,
   });
 }
 
@@ -599,7 +599,7 @@ function deleteTrait({ id }: { id?: number }) {
   db.prepare(
     `
     DELETE FROM traits
-    WHERE id = $i
+    WHERE id = $id
   `,
   ).run({ id });
 }
@@ -663,13 +663,13 @@ function setAbility({ id, name, label, description }: DB.Ability): void {
   db.prepare(
     `
     INSERT OR REPLACE INTO abilities (id, name, label, description)
-    VALUES ($id, $name, $label, $description
+    VALUES ($id, $name, $label, $description)
   `,
   ).run({
     id,
     name,
     label,
-    descrition,
+    description,
   });
 }
 
@@ -679,7 +679,7 @@ function deleteAbility({ id }: { id?: number }) {
   db.prepare(
     `
     DELETE FROM abilities
-    WHERE id = $i
+    WHERE id = $id
   `,
   ).run({ id });
 }
@@ -757,7 +757,7 @@ async function getCards({
         isToken,
         tokenIds,
         parentId,
-        isRborn,
+        isReborn,
       });
     },
     getCount: () => {
@@ -772,7 +772,7 @@ async function getCards({
         isToken,
         tokenIds,
         parentId,
-        isRborn,
+        isReborn,
       })['COUNT(*)'];
     },
   });
@@ -791,13 +791,13 @@ function setCard({
   tokenIds,
   parentId,
   isReborn,
-  mage,
+  image,
 }: DB.Card): void {
   const db = getInstance();
   db.prepare(
     `
     INSERT OR REPLACE INTO abilities (id, roleId, typeId, traitId, rarityId, cost, name, isToken, tokenIds, parentId, isReborn, image)
-    VALUES ($id, $roleId, $typeId, $traitId, $rarityId, $cost, $name, $isToken, $tokenIds, $parentId, $isReborn, $image
+    VALUES ($id, $roleId, $typeId, $traitId, $rarityId, $cost, $name, $isToken, $tokenIds, $parentId, $isReborn, $image)
   `,
   ).run({
     id,
@@ -811,7 +811,7 @@ function setCard({
     tokenIds,
     parentId,
     isReborn,
-    mage,
+    image,
   });
 }
 
@@ -821,7 +821,7 @@ function deleteCard({ id }: { id?: number }) {
   db.prepare(
     `
     DELETE FROM cards
-    WHERE id = $i
+    WHERE id = $id
   `,
   ).run({ id });
 }
@@ -875,7 +875,7 @@ async function getCardDetails({
         evolutionStage,
         attack,
         health,
-        descrition,
+        description,
       });
     },
     getCount: () => {
@@ -885,7 +885,7 @@ async function getCardDetails({
         evolutionStage,
         attack,
         health,
-        descrition,
+        description,
       })['COUNT(*)'];
     },
   });
@@ -898,13 +898,13 @@ function setCardDetails({
   evolutionStage,
   attack,
   health,
-  descrition,
+  description,
 }: DB.CardDetails): void {
   const db = getInstance();
   db.prepare(
     `
     INSERT OR REPLACE INTO roles (id, cardId, evolutionStage, attack, health, description)
-    VALUES ($id, $cardId, $evolutionStage, $attack, $health, $description
+    VALUES ($id, $cardId, $evolutionStage, $attack, $health, $description)
   `,
   ).run({
     id,
@@ -912,7 +912,7 @@ function setCardDetails({
     evolutionStage,
     attack,
     health,
-    descrition,
+    description,
   });
 }
 
@@ -922,7 +922,7 @@ function deleteCardDetails({ id }: { id?: number }) {
   db.prepare(
     `
     DELETE FROM cardDetails
-    WHERE id = $i
+    WHERE id = $id
   `,
   ).run({ id });
 }

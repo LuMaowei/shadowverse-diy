@@ -89,7 +89,7 @@ const contextHandler = {
     deleteCard,
     getCardDetails,
     setCardDetails,
-    deleteCardDetail,
+    deleteCardDetails,
   },
 };
 
