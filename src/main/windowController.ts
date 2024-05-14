@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow, ipcMain, dialog } from 'electron';
 
 export default function windowController(window: BrowserWindow) {
   ipcMain.on('window:minimize', () => {
@@ -23,5 +23,15 @@ export default function windowController(window: BrowserWindow) {
 
   window.on('unmaximize', () => {
     window.webContents.send('isMaximized', false);
+  });
+
+  ipcMain.on('open-file-dialog', (event, eventId) => {
+    dialog
+      .showOpenDialog({
+        properties: ['openFile'],
+      })
+      .then((res) => {
+        event.sender.send(`selected-file-${eventId}`, res);
+      });
   });
 }

@@ -8,6 +8,16 @@ export type DataInterface = {
   ) => Promise<any>;
   setRole: (params: DB.Role) => void;
   deleteRole: (params: DB.Role) => void;
+  getTypes: (
+    params: DB.Type & { pageSize?: number; current?: number },
+  ) => Promise<any>;
+  setType: (params: DB.Type) => void;
+  deleteType: (params: DB.Type) => void;
+  getRarities: (
+    params: DB.Rarity & { pageSize?: number; current?: number },
+  ) => Promise<any>;
+  setRarity: (params: DB.Rarity) => void;
+  deleteRarity: (params: DB.Rarity) => void;
 };
 
 export type ClientInterface = DataInterface & {

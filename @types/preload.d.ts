@@ -1,4 +1,3 @@
-import { WindowName } from '../src/types';
 import { ClientInterface } from '../src/main/db/types';
 
 declare global {
@@ -9,15 +8,9 @@ declare global {
 
     locale: string;
     sqlClient: ClientInterface;
-
-    // for other window
-    windowOpen: (args: Windows.Args) => void;
-    windowClose: (name: WindowName) => void;
   }
 
   interface Window {
     Context: ContextType;
-
-    // for theme
   }
 }

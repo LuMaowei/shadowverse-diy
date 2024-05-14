@@ -1,9 +1,11 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { DrawerForm, ProFormText } from '@ant-design/pro-components';
-import { Button, ColorPicker, Form } from 'antd';
+import { ProTable, DrawerForm, ProFormText } from '@ant-design/pro-components';
+import { Button, Form, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
+import SingleImageUpload from '../../components/SingleImageUpload';
 
+// 职业
 export default function Role() {
   const actionRef = useRef<ActionType>();
   const [form] = Form.useForm<DB.Role>();
@@ -11,12 +13,7 @@ export default function Role() {
   const [formReadOnly, setFormReadOnly] = useState<boolean>(false);
 
   const onCreateFinish = (values: DB.Role) => {
-    const { roleColor, ...rest } = values;
-    window.Context.sqlClient.setRole({
-      ...rest,
-      // @ts-ignore
-      roleColor: roleColor?.toHexString(),
-    });
+    window.Context.sqlClient.setRole(values);
     actionRef.current?.reload();
   };
 
@@ -29,30 +26,31 @@ export default function Role() {
     {
       dataIndex: 'index',
       valueType: 'indexBorder',
-      width: 4,
+      width: 48,
     },
     {
-      title: '职业名称',
-      dataIndex: 'roleKeyword',
-      copyable: true,
-      ellipsis: tru,
+      title: '职业关键字',
+      dataIndex: 'name',
+      ellipsis: true,
     },
     {
-      title: '代表颜色',
-      dataIndex: 'roleColor',
-      valueType: 'color',
+      title: '职业展示名称',
+      dataIndex: 'label',
+      ellipsis: true,
+    },
+    {
+      title: '水晶',
+      dataIndex: 'gem',
       search: false,
-      width: 8,
-    },
-    {
-      title: '图标',
-      dataIndex: 'roleIcon',
-      width: 4,
+      valueType: 'image',
+      align: 'center',
     },
     {
       title: '头像',
-      dataIndex: 'roleAvatar',
-      width: 4,
+      dataIndex: 'checkIcon',
+      search: false,
+      valueType: 'image',
+      align: 'center',
     },
     {
       title: '操作',
@@ -83,34 +81,29 @@ export default function Role() {
         >
           查看
         </Button>,
-        <Button
-          key="delete"
-          danger
-          type="text"
-          onClick={() => onDelete(record.id)}
+        <Popconfirm
+          title="你确定要删除此职业吗？"
+          onConfirm={() => onDelete(record.id)}
         >
-          删除
-        </Button,
-      ,
-    ,
+          <Button key="delete" danger type="text">
+            删除
+          </Button>
+        </Popconfirm>,
+      ],
+    },
   ];
 
   return (
     <ProTable<DB.Role>
       columns={columns}
       actionRef={actionRef}
-      request={async (params, sort, filter) => {
-        console.log(params);
+      request={async (params) => {
         return window.Context.sqlClient.getRoles(params);
       }}
       options={false}
       rowKey="id"
-      search={{
-        'auto',
-      }}
-      pagination={{
-        10,
-      }}
+      search={{ labelWidth: 'auto' }}
+      pagination={{ pageSize: 10 }}
       dateFormatter="string"
       toolBarRender={() => [
         <DrawerForm<DB.Role>
@@ -130,11 +123,11 @@ export default function Role() {
           }
           resize={{
             maxWidth: window.innerWidth * 0.8,
-            minWidth: 300
+            minWidth: 300,
           }}
           autoFocusFirstInput
           drawerProps={{
-            destroyOnClose: true
+            destroyOnClose: true,
           }}
           onFinish={async (values) => {
             onCreateFinish(values);
@@ -142,21 +135,22 @@ export default function Role() {
           }}
         >
           <ProFormText name="id" hidden />
-          <ProFormText name="roleKeyword" label="职业关键字" />
-          <ProFormText
-            rules={[
-              {
-                required: true
-              }
-            ]}
-            name="roleName"
-            label="职业名称"
-          />
-          <Form.Item name="roleColor" label="代表颜色">
-            <ColorPicker disabledAlpha disabled={formReadOnly} />
+          <ProFormText name="name" label="职业关键字" />
+          <ProFormText name="label" label="职业展示名称" />
+          <Form.Item name="checkIcon" label="头像">
+            <SingleImageUpload disabled={formReadOnly} />
           </Form.Item>
-        </DrawerForm>
+          <Form.Item name="gem" label="水晶">
+            <SingleImageUpload disabled={formReadOnly} />
+          </Form.Item>
+          <Form.Item name="emblem" label="徽章">
+            <SingleImageUpload disabled={formReadOnly} />
+          </Form.Item>
+          <Form.Item name="cardBackground" label="卡片背景">
+            <SingleImageUpload disabled={formReadOnly} />
+          </Form.Item>
+        </DrawerForm>,
       ]}
     />
-  )
+  );
 }

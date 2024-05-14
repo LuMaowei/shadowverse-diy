@@ -188,15 +188,13 @@ async function getPagedData({
 
 // 获取职业分页列表
 async function getRoles({
-  roleKeyword,
-  roleName,
-  roleColor,
+  name,
+  label,
   current = 1,
   pageSize = 10,
 }: {
-  roleKeyword?: string;
-  roleName?: string;
-  roleColor?: string;
+  name?: string;
+  label?: string;
   current?: number;
   pageSize?: number;
 }): Promise<any> {
@@ -208,16 +206,12 @@ async function getRoles({
     WHERE 1=1
   `;
 
-  if (roleKeyword) {
-    sql += ` AND roleKeyword = $roleKeyword`;
+  if (name) {
+    sql += ` AND name = $name`;
   }
 
-  if (roleName) {
-    sql += ` AND roleName LIKE $roleName`;
-  }
-
-  if (roleColor) {
-    sql += ` AND roleColor = $roleColor`;
+  if (label) {
+    sql += ` AND label LIKE $label`;
   }
 
   return getPagedData({
@@ -226,13 +220,13 @@ async function getRoles({
     getRows: (limit, offset) => {
       return db
         .prepare(`${sql} LIMIT ? OFFSET ?`)
-        .all(limit, offset, { roleKeyword, roleName, roleColor });
+        .all(limit, offset, { name, label });
     },
     getCount: () => {
       // @ts-ignore
-      return db
-        .prepare(`SELECT COUNT(*) FROM (${sql})`)
-        .get({ roleKeyword, roleName, roleColor })['COUNT(*)'];
+      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get({ name, label })[
+        'COUNT(*)'
+      ];
     },
   });
 }
@@ -240,26 +234,26 @@ async function getRoles({
 // 新增、修改职业
 function setRole({
   id,
-  roleKeyword,
-  roleName,
-  roleColor,
-  roleIcon,
-  roleAvatar,
+  name,
+  label,
+  checkIcon,
+  gem,
+  emblem,
   cardBackground,
 }: DB.Role): void {
   const db = getInstance();
   db.prepare(
     `
-    INSERT OR REPLACE INTO roles (id, roleKeyword, roleName, roleColor, roleIcon, roleAvatar, cardBackground)
-    VALUES ($id, $roleKeyword, $roleName, $roleColor, $roleIcon, $roleAvatar, $cardBackground)
+    INSERT OR REPLACE INTO roles (id, name, label, checkIcon, gem, emblem, cardBackground)
+    VALUES ($id, $name, $label, $checkIcon, $gem, $emblem, $cardBackground)
   `,
   ).run({
     id,
-    roleKeyword,
-    roleName,
-    roleColor,
-    roleIcon,
-    roleAvatar,
+    name,
+    label,
+    checkIcon,
+    gem,
+    emblem,
     cardBackground,
   });
 }
@@ -275,6 +269,146 @@ function deleteRole({ id }: { id?: number }) {
   ).run({ id });
 }
 
+/** ******************************* types *********************************** */
+
+async function getTypes({
+  name,
+  label,
+  current = 1,
+  pageSize = 10,
+}: {
+  name?: string;
+  label?: string;
+  current?: number;
+  pageSize?: number;
+}): Promise<any> {
+  const db = getInstance();
+
+  let sql = `
+    SELECT *
+    FROM types
+    WHERE 1=1
+  `;
+
+  if (name) {
+    sql += ` AND name = $name`;
+  }
+
+  if (label) {
+    sql += ` AND label LIKE $label`;
+  }
+
+  return getPagedData({
+    current,
+    pageSize,
+    getRows: (limit, offset) => {
+      return db
+        .prepare(`${sql} LIMIT ? OFFSET ?`)
+        .all(limit, offset, { name, label });
+    },
+    getCount: () => {
+      // @ts-ignore
+      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get({ name, label })[
+        'COUNT(*)'
+      ];
+    },
+  });
+}
+
+function setType({ id, name, label }: DB.Type): void {
+  const db = getInstance();
+  db.prepare(
+    `
+    INSERT OR REPLACE INTO types (id, name, label)
+    VALUES ($id, $name, $label)
+  `,
+  ).run({
+    id,
+    name,
+    label,
+  });
+}
+
+function deleteType({ id }: { id?: number }) {
+  const db = getInstance();
+  db.prepare(
+    `
+    DELETE FROM types
+    WHERE id = $id
+  `,
+  ).run({ id });
+}
+
+/** ******************************* rarities *********************************** */
+
+async function getRarities({
+  name,
+  label,
+  current = 1,
+  pageSize = 10,
+}: {
+  name?: string;
+  label?: string;
+  current?: number;
+  pageSize?: number;
+}): Promise<any> {
+  const db = getInstance();
+
+  let sql = `
+    SELECT *
+    FROM rarities
+    WHERE 1=1
+  `;
+
+  if (name) {
+    sql += ` AND name = $name`;
+  }
+
+  if (label) {
+    sql += ` AND label LIKE $label`;
+  }
+
+  return getPagedData({
+    current,
+    pageSize,
+    getRows: (limit, offset) => {
+      return db
+        .prepare(`${sql} LIMIT ? OFFSET ?`)
+        .all(limit, offset, { name, label });
+    },
+    getCount: () => {
+      // @ts-ignore
+      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get({ name, label })[
+        'COUNT(*)'
+      ];
+    },
+  });
+}
+
+function setRarity({ id, name, label }: DB.Type): void {
+  const db = getInstance();
+  db.prepare(
+    `
+    INSERT OR REPLACE INTO rarities (id, name, label)
+    VALUES ($id, $name, $label)
+  `,
+  ).run({
+    id,
+    name,
+    label,
+  });
+}
+
+function deleteRarity({ id }: { id?: number }) {
+  const db = getInstance();
+  db.prepare(
+    `
+    DELETE FROM rarities
+    WHERE id = $id
+  `,
+  ).run({ id });
+}
+
 const dataInterface: ServerInterface = {
   close,
   removeDB,
@@ -282,6 +416,12 @@ const dataInterface: ServerInterface = {
   getRoles,
   setRole,
   deleteRole,
+  getTypes,
+  setType,
+  deleteType,
+  getRarities,
+  setRarity,
+  deleteRarity,
 };
 
 export default dataInterface;

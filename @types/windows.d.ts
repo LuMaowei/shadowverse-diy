@@ -1,5 +1,3 @@
-import { WindowName, WindowUrl } from '../src/types';
-
 declare global {
   namespace Windows {
     type Base = {
@@ -14,16 +12,8 @@ declare global {
       modal?: boolean;
     };
 
-    type Info =
-      | {
-          name: WindowName.Setting;
-          url: WindowUrl.Setting;
-        }
-      | { name: WindowName.Info; url: WindowUrl.Info }
-      | { name: WindowName.Search; url: WindowUrl.Search };
-
-    type Args = Info & Base;
-
     type SearchType = { [key: string]: string };
   }
 }
+
+export {};

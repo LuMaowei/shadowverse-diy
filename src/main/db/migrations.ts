@@ -17,19 +17,115 @@ function updateToSchemaVersion1(
   logger.info('updateToSchemaVersion1: starting...');
 
   db.transaction(() => {
-    // table roles
+    // 职业表
     db.exec(`
       CREATE TABLE roles (
         id INTEGER PRIMARY KEY,
-        roleKeyword STRING NOT NULL,
-        roleName STRING NOT NULL,
-        roleColor STRING NOT NULL,
-        roleIcon BLOB,
-        roleAvatar BLOB,
-        cardBackground BLOB
+        name STRING NOT NULL,
+        label STRING NOT NULL,
+        checkIcon STRING,
+        gem STRING,
+        emblem STRING,
+        cardBackground STRING
       );
 
-      CREATE INDEX roleKeyword ON roles (roleKeyword);
+      CREATE INDEX id ON roles (id);
+    `);
+
+    // 卡片种类表
+    db.exec(`
+      CREATE TABLE types (
+        id INTEGER PRIMARY KEY,
+        name STRING NOT NULL,
+        label STRING NOT NULL
+      );
+
+      CREATE INDEX id ON types (id);
+   `);
+
+    // 卡片稀有度表
+    db.exec(`
+      CREATE TABLE rarities (
+        id INTEGER PRIMARY KEY,
+        name STRING NOT NULL,
+        label STRING NOT NULL,
+      );
+
+      CREATE INDEX id ON rarities (id);
+    `);
+
+    // 卡片框架表
+    db.exec(`
+      CREATE TABLE frames (
+        id INTEGER PRIMARY KEY,
+        typeId INTEGER,
+        rarityId INTEGER,
+        frame STRING,
+        FOREIGN KEY (typeId) REFERENCES types(id),
+        FOREIGN KEY (rarityId) REFERENCES rarities(id)
+      );
+    `);
+
+    // 兵种表
+    db.exec(`
+      CREATE TABLE traits (
+        id INTEGER PRIMARY KEY,
+        name STRING NOT NULL,
+        label STRING NOT NULL,
+      );
+
+      CREATE INDEX id ON traits (id);
+    `);
+
+    // 卡片能力关键字表
+    db.exec(`
+      CREATE TABLE abilities (
+        id INTEGER PRIMARY KEY,
+        name STRING NOT NULL,
+        label STRING NOT NULL,
+        sort INTEGER NOT NULL,
+        description STRING
+      );
+
+      CREATE INDEX id ON traits (id);
+    `);
+
+    // 卡片表
+    db.exec(`
+      CREATE TABLE cards (
+        id INTEGER PRIMARY KEY,
+        roleId INTEGER,
+        typeId INTEGER,
+        traitId INTEGER,
+        rarityId INTEGER,
+        cost INTEGER,
+        name STRING NOT NULL,
+        isToken BOOLEAN,
+        tokenIds STRING,
+        parentId INTEGER,
+        imagePath STRING,
+        FOREIGN KEY (roleId) REFERENCES roles(id),
+        FOREIGN KEY (typeId) REFERENCES types(id),
+        FOREIGN KEY (traitId) REFERENCES traits(id),
+        FOREIGN KEY (rarityId) REFERENCES rarities(id)
+      );
+
+      CREATE INDEX id ON cards (id);
+    `);
+
+    // 卡片详情表
+    db.exec(`
+      CREATE TABLE cardDetails (
+        id INTEGER PRIMARY KEY,
+        cardId INTEGER,
+        evolutionStage INTEGER,
+        attack INTEGER,
+        health INTEGER,
+        description STRING,
+        FOREIGN KEY (cardId) REFERENCES cards(id)
+      );
+
+      CREATE INDEX id ON cards (id);
     `);
 
     db.pragma('user_version = 1');

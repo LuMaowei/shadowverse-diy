@@ -19,6 +19,9 @@ module.exports = {
     'consistent-return': 'off',
     'promise/param-names': 'off',
     'react/no-unstable-nested-components': 'off',
+    'react/jsx-props-no-spreading': 'off',
+    'jsx-a11y/no-static-element-interactions': 'off',
+    'react/require-default-props': 'off',
   },
   parserOptions: {
     ecmaVersion: 2022,
