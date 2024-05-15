@@ -109,7 +109,14 @@ export default function CardEdit(): JSX.Element {
         </Flex>
       </div>
       <div className="card-content">
-        <CardFrame cardFrame={cardFrame} />
+        <CardFrame
+          cardFrame={cardFrame}
+          name={cardInfo.name}
+          cost={cardInfo.cost}
+          attack={cardDetails[0]?.attack}
+          health={cardDetails[0]?.health}
+        />
+        <div className="card-description-container">内容</div>
       </div>
     </div>
   );

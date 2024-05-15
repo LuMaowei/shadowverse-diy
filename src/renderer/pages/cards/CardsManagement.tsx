@@ -1,12 +1,12 @@
 import { PlusOutlined } from '@ant-design/icons';
 import {
   ActionType,
+  DrawerForm,
   ProColumns,
   ProFormDigit,
-  ProTable,
-  DrawerForm,
-  ProFormText,
   ProFormSwitch,
+  ProFormText,
+  ProTable,
 } from '@ant-design/pro-components';
 import { Button, Form, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
@@ -158,7 +158,7 @@ export default function CardsManagement() {
               icon={<PlusOutlined />}
               onClick={() => {
                 setFormReadOnly(false);
-                navigator('/card/edit');
+                // navigator('/card/edit');
               }}
             >
               新建

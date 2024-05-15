@@ -103,15 +103,15 @@ function updateToSchemaVersion1(
         cardPackId INTEGER,
         cost INTEGER,
         name STRING,
-        isToken BOOLEAN,
+        isToken INTEGER,
         tokenIds STRING,
         parentId INTEGER,
-        isReborn BOOLEAN,
+        isReborn INTEGER,
         image STRING,
         FOREIGN KEY (roleId) REFERENCES roles(id),
         FOREIGN KEY (typeId) REFERENCES types(id),
         FOREIGN KEY (traitId) REFERENCES traits(id),
-        FOREIGN KEY (rarityId) REFERENCES rarities(id)
+        FOREIGN KEY (rarityId) REFERENCES rarities(id),
         FOREIGN KEY (cardPackId) REFERENCES cardPacks(id)
       );
 
@@ -149,48 +149,13 @@ function updateToSchemaVersion2(
   logger.info('updateToSchemaVersion1: starting...');
 
   db.transaction(() => {
-    db.exec(`
-      CREATE TABLE new_cards (
-        id INTEGER PRIMARY KEY,
-        roleId INTEGER,
-        typeId INTEGER,
-        traitId INTEGER,
-        rarityId INTEGER,
-        cardPackId INTEGER,
-        cost INTEGER,
-        name STRING,
-        isToken INTEGER,
-        tokenIds STRING,
-        parentId INTEGER,
-        isReborn INTEGER,
-        image STRING,
-        FOREIGN KEY (roleId) REFERENCES roles(id),
-        FOREIGN KEY (typeId) REFERENCES types(id),
-        FOREIGN KEY (traitId) REFERENCES traits(id),
-        FOREIGN KEY (rarityId) REFERENCES rarities(id),
-        FOREIGN KEY (cardPackId) REFERENCES cardPacks(id)
-      );
-    `);
-
-    db.exec(`
-      INSERT INTO new_cards SELECT * FROM cards
-    `);
-
-    db.exec(`
-      DROP TABLE cards
-    `);
-
-    db.exec(`
-      ALTER TABLE new_cards RENAME TO cards
-    `);
-
     db.pragma('user_version = 2');
   })();
 
   logger.info('updateToSchemaVersion2: success!');
 }
 
-export const SCHEMA_VERSIONS = [updateToSchemaVersion1, updateToSchemaVersion2];
+export const SCHEMA_VERSIONS = [updateToSchemaVersion1];
 
 export default function updateSchema(
   db: Database,
