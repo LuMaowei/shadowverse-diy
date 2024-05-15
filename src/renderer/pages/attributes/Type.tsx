@@ -94,7 +94,7 @@ export default function Type() {
         <DrawerForm<DB.Type>
           open={formOpen}
           onOpenChange={setFormOpen}
-          title="新建卡片类型"
+          title={`${formReadOnly ? '查看' : '编辑'}卡片类型`}
           form={form}
           readonly={formReadOnly}
           trigger={

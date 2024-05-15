@@ -1,6 +1,6 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { DrawerForm, ProFormText, ProTable } from '@ant-design/pro-components';
-import { Button, Form, Popconfirm } from 'antd';
+import { Button, Form } from 'antd';
 import { useRef, useState } from 'react';
 import SingleImageUpload from '../../components/SingleImageUpload';
 
@@ -16,11 +16,6 @@ export default function Frame() {
     actionRef.current?.reload();
   };
 
-  const onDelete = (id: DB.Frame['id']) => {
-    window.Context.sqlClient.deleteFrame({ id });
-    actionRef.current?.reload();
-  };
-
   const columns: ProColumns<DB.Frame>[] = [
     {
       dataIndex: 'index',
@@ -33,7 +28,7 @@ export default function Frame() {
       ellipsis: true,
     },
     {
-      title: '卡片稀有度',
+      title: '稀有度',
       dataIndex: 'rarityLabel',
       ellipsis: true,
     },
@@ -49,7 +44,7 @@ export default function Frame() {
       valueType: 'option',
       key: 'option',
       align: 'center',
-      width: 212,
+      width: 152,
       render: (text, record) => [
         <Button
           key="edit"
@@ -73,14 +68,6 @@ export default function Frame() {
         >
           查看
         </Button>,
-        <Popconfirm
-          title="你确定要删除此卡片框架吗？"
-          onConfirm={() => onDelete(record.id)}
-        >
-          <Button key="delete" danger type="text">
-            删除
-          </Button>
-        </Popconfirm>,
       ],
     },
   ];
@@ -90,9 +77,6 @@ export default function Frame() {
       columns={columns}
       actionRef={actionRef}
       request={async (params) => {
-        window.Context.sqlClient.getFrames(params).then((res) => {
-          console.log(res);
-        });
         return window.Context.sqlClient.getFrames(params);
       }}
       options={false}
@@ -104,7 +88,7 @@ export default function Frame() {
         <DrawerForm<DB.Frame>
           open={formOpen}
           onOpenChange={setFormOpen}
-          title="编辑卡片稀有度"
+          title={`${formReadOnly ? '查看' : '编辑'}卡片框架`}
           form={form}
           readonly={formReadOnly}
           resize={{

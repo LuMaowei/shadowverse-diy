@@ -4,10 +4,10 @@ declare global {
       id?: number;
       name?: string;
       label?: string;
-      checkIcon?: string;
+      avatar?: string;
       gem?: string;
       emblem?: string;
-      cardBackground?: string;
+      background?: string;
     }
 
     interface Type {
@@ -43,18 +43,27 @@ declare global {
       description?: string;
     }
 
+    interface CardPack {
+      id?: number;
+      name?: string;
+      label?: string;
+      sort?: number;
+      description?: string;
+    }
+
     interface Card {
       id?: number;
       roleId?: number;
       typeId?: number;
       traitId?: number;
       rarityId?: number;
+      cardPackId?: number;
       cost?: number;
       name?: string;
-      isToken?: boolean;
+      isToken?: number;
       tokenIds?: number[];
       parentId?: number;
-      isReborn?: boolean;
+      isReborn?: number;
       image?: string;
     }
 

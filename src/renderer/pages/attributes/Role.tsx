@@ -47,7 +47,7 @@ export default function Role() {
     },
     {
       title: '头像',
-      dataIndex: 'checkIcon',
+      dataIndex: 'avatar',
       search: false,
       valueType: 'image',
       align: 'center',
@@ -109,7 +109,7 @@ export default function Role() {
         <DrawerForm<DB.Role>
           open={formOpen}
           onOpenChange={setFormOpen}
-          title="新建职业"
+          title={`${formReadOnly ? '查看' : '编辑'}职业`}
           form={form}
           readonly={formReadOnly}
           trigger={
@@ -137,7 +137,7 @@ export default function Role() {
           <ProFormText name="id" hidden />
           <ProFormText name="name" label="职业关键字" />
           <ProFormText name="label" label="职业展示名称" />
-          <Form.Item name="checkIcon" label="头像">
+          <Form.Item name="avatar" label="头像">
             <SingleImageUpload disabled={formReadOnly} />
           </Form.Item>
           <Form.Item name="gem" label="水晶">
@@ -146,7 +146,7 @@ export default function Role() {
           <Form.Item name="emblem" label="徽章">
             <SingleImageUpload disabled={formReadOnly} />
           </Form.Item>
-          <Form.Item name="cardBackground" label="卡片背景">
+          <Form.Item name="background" label="卡片背景">
             <SingleImageUpload disabled={formReadOnly} />
           </Form.Item>
         </DrawerForm>,

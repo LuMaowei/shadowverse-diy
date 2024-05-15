@@ -28,12 +28,12 @@ export default function Rarity() {
       width: 48,
     },
     {
-      title: '卡片稀有度关键字',
+      title: '稀有度关键字',
       dataIndex: 'name',
       ellipsis: true,
     },
     {
-      title: '卡片稀有度展示名称',
+      title: '稀有度展示名称',
       dataIndex: 'label',
       ellipsis: true,
     },
@@ -67,7 +67,7 @@ export default function Rarity() {
           查看
         </Button>,
         <Popconfirm
-          title="你确定要删除此卡片稀有度吗？"
+          title="你确定要删除此稀有度吗？"
           onConfirm={() => onDelete(record.id)}
         >
           <Button key="delete" danger type="text">
@@ -94,7 +94,7 @@ export default function Rarity() {
         <DrawerForm<DB.Rarity>
           open={formOpen}
           onOpenChange={setFormOpen}
-          title="新建卡片稀有度"
+          title={`${formReadOnly ? '查看' : '编辑'}稀有度`}
           form={form}
           readonly={formReadOnly}
           trigger={
@@ -120,8 +120,8 @@ export default function Rarity() {
           }}
         >
           <ProFormText name="id" hidden />
-          <ProFormText name="name" label="卡片稀有度关键字" />
-          <ProFormText name="label" label="卡片稀有度展示名称" />
+          <ProFormText name="name" label="稀有度关键字" />
+          <ProFormText name="label" label="稀有度展示名称" />
         </DrawerForm>,
       ]}
     />

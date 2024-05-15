@@ -8,6 +8,7 @@ import {
   Role,
   Trait,
   Type,
+  CardPack,
 } from '../pages/attributes/index';
 import {
   CardCreate,
@@ -15,6 +16,7 @@ import {
   CardPreview,
   CardsManagement,
 } from '../pages/cards/index';
+import CardLayout from '../layouts/CardLayout';
 
 const routes: RouteObject[] = [
   {
@@ -53,6 +55,10 @@ const routes: RouteObject[] = [
             path: 'frame',
             element: <Frame />,
           },
+          {
+            path: 'cardPack',
+            element: <CardPack />,
+          },
         ],
       },
       {
@@ -62,19 +68,21 @@ const routes: RouteObject[] = [
             index: true,
             element: <CardsManagement />,
           },
-          {
-            path: 'create',
-            element: <CardCreate />,
-          },
-          {
-            path: 'edit',
-            element: <CardEdit />,
-          },
-          {
-            path: 'preview',
-            element: <CardPreview />,
-          },
         ],
+      },
+    ],
+  },
+  {
+    path: '/card',
+    element: <CardLayout />,
+    children: [
+      {
+        path: 'edit/:id?',
+        element: <CardEdit />,
+      },
+      {
+        path: 'preview/:id',
+        element: <CardPreview />,
       },
     ],
   },

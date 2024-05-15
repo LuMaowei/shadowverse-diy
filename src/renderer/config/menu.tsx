@@ -20,7 +20,7 @@ const menu: Route = [
       },
       {
         path: 'type',
-        name: '种类',
+        name: '卡片类型',
         icon: <CrownFilled />,
       },
       {
@@ -30,7 +30,7 @@ const menu: Route = [
       },
       {
         path: 'frame',
-        name: '框架图片',
+        name: '卡片框架',
         icon: <CrownFilled />,
       },
       {
@@ -41,6 +41,11 @@ const menu: Route = [
       {
         path: 'ability',
         name: '能力',
+        icon: <CrownFilled />,
+      },
+      {
+        path: 'cardPack',
+        name: '卡包',
         icon: <CrownFilled />,
       },
     ],

@@ -23,10 +23,10 @@ function updateToSchemaVersion1(
         id INTEGER PRIMARY KEY,
         name STRING NOT NULL,
         label STRING NOT NULL,
-        checkIcon STRING,
+        avatar STRING,
         gem STRING,
         emblem STRING,
-        cardBackground STRING
+        background STRING
       );
     `);
 
@@ -81,6 +81,17 @@ function updateToSchemaVersion1(
       );
     `);
 
+    // 卡包
+    db.exec(`
+      CREATE TABLE cardPacks (
+        id INTEGER PRIMARY KEY,
+        name STRING NOT NULL,
+        label STRING NOT NULL,
+        sort INTEGER NOT NULL,
+        description STRING
+      );
+    `);
+
     // 卡片表
     db.exec(`
       CREATE TABLE cards (
@@ -89,6 +100,7 @@ function updateToSchemaVersion1(
         typeId INTEGER,
         traitId INTEGER,
         rarityId INTEGER,
+        cardPackId INTEGER,
         cost INTEGER,
         name STRING,
         isToken BOOLEAN,
@@ -100,6 +112,7 @@ function updateToSchemaVersion1(
         FOREIGN KEY (typeId) REFERENCES types(id),
         FOREIGN KEY (traitId) REFERENCES traits(id),
         FOREIGN KEY (rarityId) REFERENCES rarities(id)
+        FOREIGN KEY (cardPackId) REFERENCES cardPacks(id)
       );
 
       CREATE INDEX cardId ON cards (id);
@@ -137,17 +150,38 @@ function updateToSchemaVersion2(
 
   db.transaction(() => {
     db.exec(`
-      CREATE TABLE group(
+      CREATE TABLE new_cards (
         id INTEGER PRIMARY KEY,
-        userId INTEGER NOT NULL,
-        account STRING NOT NULL,
-        token STRING,
-        avatar STRING DEFAULT NULL,
-        email STRING DEFAULT NULL,
-        theme STRING,
-        regisTime STRING,
-        updateTime STRING
+        roleId INTEGER,
+        typeId INTEGER,
+        traitId INTEGER,
+        rarityId INTEGER,
+        cardPackId INTEGER,
+        cost INTEGER,
+        name STRING,
+        isToken INTEGER,
+        tokenIds STRING,
+        parentId INTEGER,
+        isReborn INTEGER,
+        image STRING,
+        FOREIGN KEY (roleId) REFERENCES roles(id),
+        FOREIGN KEY (typeId) REFERENCES types(id),
+        FOREIGN KEY (traitId) REFERENCES traits(id),
+        FOREIGN KEY (rarityId) REFERENCES rarities(id),
+        FOREIGN KEY (cardPackId) REFERENCES cardPacks(id)
       );
+    `);
+
+    db.exec(`
+      INSERT INTO new_cards SELECT * FROM cards
+    `);
+
+    db.exec(`
+      DROP TABLE cards
+    `);
+
+    db.exec(`
+      ALTER TABLE new_cards RENAME TO cards
     `);
 
     db.pragma('user_version = 2');
@@ -156,7 +190,7 @@ function updateToSchemaVersion2(
   logger.info('updateToSchemaVersion2: success!');
 }
 
-export const SCHEMA_VERSIONS = [updateToSchemaVersion1];
+export const SCHEMA_VERSIONS = [updateToSchemaVersion1, updateToSchemaVersion2];
 
 export default function updateSchema(
   db: Database,

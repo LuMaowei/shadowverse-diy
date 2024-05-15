@@ -6,3 +6,56 @@ header {
   }
 }
 
+
+@font-face {
+  font-family: 'HuakangWeibei';
+  src: url('../../assets/huakangWeibeiW7.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.card-container {
+  font-family: 'HuakangWeibei', serif;
+  width: 1600px;
+  height: 900px;
+  overflow: auto;
+  position: relative;
+  color: #fff;
+
+  .card-head {
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    padding: 64px 32px 16px 0;
+    font-size: 28px;
+  }
+
+  .card-frame-container {
+    position: relative;
+  }
+
+  .card-frame {
+    transform: scale(0.88);
+  }
+}
+
+/*.card-container::before {*/
+/*  content: '';*/
+/*  position: absolute;*/
+/*  top: 0;*/
+/*  right: 0;*/
+/*  bottom: 0;*/
+/*  left: 0;*/
+/*  background-color: rgba(0, 0, 0, 0.5);*/
+/*}*/
+
+
+.card {
+  font-family: 'HuakangWeibei', serif;
+}
+
+.card-ability {
+  color: #bd9e65;
+  font-weight: bold;
+}

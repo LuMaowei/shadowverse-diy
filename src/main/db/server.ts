@@ -184,7 +184,7 @@ async function getPagedData({
   };
 }
 
-/** ******************************* roles *********************************** */
+/** ******************************* 职业 *********************************** */
 
 // 获取职业分页列表
 async function getRoles({
@@ -192,11 +192,13 @@ async function getRoles({
   label,
   current = 1,
   pageSize = 10,
+  pagination = true,
 }: {
   name?: string;
   label?: string;
   current?: number;
   pageSize?: number;
+  pagination?: boolean;
 }): Promise<any> {
   const db = getInstance();
 
@@ -206,29 +208,33 @@ async function getRoles({
     WHERE 1=1
   `;
 
+  const params = { name, label };
+
   if (name) {
     sql += ` AND name = $name`;
   }
 
   if (label) {
     sql += ` AND label LIKE $label`;
+    params.label = `%${label}%`;
   }
 
-  return getPagedData({
-    current,
-    pageSize,
-    getRows: (limit, offset) => {
-      return db
-        .prepare(`${sql} LIMIT ? OFFSET ?`)
-        .all(limit, offset, { name, label });
-    },
-    getCount: () => {
-      // @ts-ignore
-      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get({ name, label })[
-        'COUNT(*)'
-      ];
-    },
-  });
+  if (pagination) {
+    return getPagedData({
+      current,
+      pageSize,
+      getRows: (limit, offset) => {
+        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
+      },
+      getCount: () => {
+        // @ts-ignore
+        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
+          'COUNT(*)'
+        ];
+      },
+    });
+  }
+  return db.prepare(`${sql}`).all(params);
 }
 
 // 新增、修改职业
@@ -236,31 +242,64 @@ function setRole({
   id,
   name,
   label,
-  checkIcon,
+  avatar,
   gem,
   emblem,
-  cardBackground,
+  background,
 }: DB.Role): void {
   const db = getInstance();
-  db.prepare(
-    `
-    INSERT OR REPLACE INTO roles (id, name, label, checkIcon, gem, emblem, cardBackground)
-    VALUES ($id, $name, $label, $checkIcon, $gem, $emblem, $cardBackground)
+
+  if (id) {
+    db.prepare(
+      `
+        UPDATE roles SET name = $name, label = $label, avatar = $avatar, gem = $gem, emblem = $emblem, background = $background
+        WHERE id = $id
+      `,
+    ).run({
+      id,
+      name,
+      label,
+      avatar,
+      gem,
+      emblem,
+      background,
+    });
+  } else {
+    db.prepare(
+      `
+    INSERT INTO roles (name, label, avatar, gem, emblem, background)
+    VALUES ($name, $label, $avatar, $gem, $emblem, $background)
   `,
-  ).run({
-    id,
-    name,
-    label,
-    checkIcon,
-    gem,
-    emblem,
-    cardBackground,
-  });
+    ).run({
+      id,
+      name,
+      label,
+      avatar,
+      gem,
+      emblem,
+      background,
+    });
+  }
 }
 
 // 删除职业
 function deleteRole({ id }: { id?: number }) {
   const db = getInstance();
+
+  const card = db
+    .prepare(
+      `
+        SELECT * FROM cards
+        WHERE roleId = $id
+        LIMIT 1
+      `,
+    )
+    .get({ id });
+
+  if (card) {
+    return;
+  }
+
   db.prepare(
     `
     DELETE FROM roles
@@ -269,18 +308,20 @@ function deleteRole({ id }: { id?: number }) {
   ).run({ id });
 }
 
-/** ******************************* types *********************************** */
+/** ******************************* 卡片类型 *********************************** */
 
 async function getTypes({
   name,
   label,
   current = 1,
   pageSize = 10,
+  pagination = true,
 }: {
   name?: string;
   label?: string;
   current?: number;
   pageSize?: number;
+  pagination?: boolean;
 }): Promise<any> {
   const db = getInstance();
 
@@ -290,29 +331,33 @@ async function getTypes({
     WHERE 1=1
   `;
 
+  const params = { name, label };
+
   if (name) {
     sql += ` AND name = $name`;
   }
 
   if (label) {
     sql += ` AND label LIKE $label`;
+    params.label = `%${label}%`;
   }
 
-  return getPagedData({
-    current,
-    pageSize,
-    getRows: (limit, offset) => {
-      return db
-        .prepare(`${sql} LIMIT ? OFFSET ?`)
-        .all(limit, offset, { name, label });
-    },
-    getCount: () => {
-      // @ts-ignore
-      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get({ name, label })[
-        'COUNT(*)'
-      ];
-    },
-  });
+  if (pagination) {
+    return getPagedData({
+      current,
+      pageSize,
+      getRows: (limit, offset) => {
+        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
+      },
+      getCount: () => {
+        // @ts-ignore
+        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
+          'COUNT(*)'
+        ];
+      },
+    });
+  }
+  return db.prepare(`${sql}`).all(params);
 }
 
 function setType({ id, name, label }: DB.Type): void {
@@ -355,6 +400,26 @@ function setType({ id, name, label }: DB.Type): void {
 
 function deleteType({ id }: { id?: number }) {
   const db = getInstance();
+
+  const tables = ['frames', 'cards'];
+
+  for (let i = 0; i < tables.length; i += 1) {
+    // 检查当前表中是否存在roleId为传入id的数据
+    const data = db
+      .prepare(
+        `
+      SELECT * FROM ${tables[i]}
+      WHERE typeId = $id
+      LIMIT 1
+      `,
+      )
+      .get({ id });
+
+    if (data) {
+      return;
+    }
+  }
+
   db.prepare(
     `
     DELETE FROM types
@@ -363,18 +428,20 @@ function deleteType({ id }: { id?: number }) {
   ).run({ id });
 }
 
-/** ******************************* rarities *********************************** */
+/** ******************************* 稀有度 *********************************** */
 
 async function getRarities({
   name,
   label,
   current = 1,
   pageSize = 10,
+  pagination = true,
 }: {
   name?: string;
   label?: string;
   current?: number;
   pageSize?: number;
+  pagination?: boolean;
 }): Promise<any> {
   const db = getInstance();
 
@@ -384,29 +451,33 @@ async function getRarities({
     WHERE 1=1
   `;
 
+  const params = { name, label };
+
   if (name) {
     sql += ` AND name = $name`;
   }
 
   if (label) {
     sql += ` AND label LIKE $label`;
+    params.label = `%${label}%`;
   }
 
-  return getPagedData({
-    current,
-    pageSize,
-    getRows: (limit, offset) => {
-      return db
-        .prepare(`${sql} LIMIT ? OFFSET ?`)
-        .all(limit, offset, { name, label });
-    },
-    getCount: () => {
-      // @ts-ignore
-      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get({ name, label })[
-        'COUNT(*)'
-      ];
-    },
-  });
+  if (pagination) {
+    return getPagedData({
+      current,
+      pageSize,
+      getRows: (limit, offset) => {
+        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
+      },
+      getCount: () => {
+        // @ts-ignore
+        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
+          'COUNT(*)'
+        ];
+      },
+    });
+  }
+  return db.prepare(`${sql}`).all(params);
 }
 
 function setRarity({ id, name, label }: DB.Rarity): void {
@@ -449,6 +520,26 @@ function setRarity({ id, name, label }: DB.Rarity): void {
 
 function deleteRarity({ id }: { id?: number }) {
   const db = getInstance();
+
+  const tables = ['frames', 'cards'];
+
+  for (let i = 0; i < tables.length; i += 1) {
+    // 检查当前表中是否存在roleId为传入id的数据
+    const data = db
+      .prepare(
+        `
+      SELECT * FROM ${tables[i]}
+      WHERE rarityId = $id
+      LIMIT 1
+      `,
+      )
+      .get({ id });
+
+    if (data) {
+      return;
+    }
+  }
+
   db.prepare(
     `
     DELETE FROM rarities
@@ -457,18 +548,20 @@ function deleteRarity({ id }: { id?: number }) {
   ).run({ id });
 }
 
-/** ******************************* frames *********************************** */
+/** ******************************* 卡片框架 *********************************** */
 
 async function getFrames({
   typeId,
   rarityId,
   current = 1,
   pageSize = 10,
+  pagination = true,
 }: {
   typeId?: number;
   rarityId?: number;
   current?: number;
   pageSize?: number;
+  pagination?: boolean;
 }): Promise<any> {
   const db = getInstance();
 
@@ -488,21 +581,24 @@ async function getFrames({
     sql += ` AND rarityId = $rarityId`;
   }
 
-  return getPagedData({
-    current,
-    pageSize,
-    getRows: (limit, offset) => {
-      return db
-        .prepare(`${sql} LIMIT ? OFFSET ?`)
-        .all(limit, offset, { typeId, rarityId });
-    },
-    getCount: () => {
-      // @ts-ignore
-      return db
-        .prepare(`SELECT COUNT(*) FROM (${sql})`)
-        .get({ typeId, rarityId })['COUNT(*)'];
-    },
-  });
+  if (pagination) {
+    return getPagedData({
+      current,
+      pageSize,
+      getRows: (limit, offset) => {
+        return db
+          .prepare(`${sql} LIMIT ? OFFSET ?`)
+          .all(limit, offset, { typeId, rarityId });
+      },
+      getCount: () => {
+        // @ts-ignore
+        return db
+          .prepare(`SELECT COUNT(*) FROM (${sql})`)
+          .get({ typeId, rarityId })['COUNT(*)'];
+      },
+    });
+  }
+  return db.prepare(`${sql}`).all({ typeId, rarityId });
 }
 
 function setFrame({ id, typeId, rarityId, frame }: DB.Frame): void {
@@ -531,7 +627,7 @@ function deleteFrame({ id }: { id?: number }) {
   ).run({ id });
 }
 
-/** ******************************* traits *********************************** */
+/** ******************************* 兵种 *********************************** */
 
 // 获取兵种分页列表
 async function getTraits({
@@ -539,11 +635,13 @@ async function getTraits({
   label,
   current = 1,
   pageSize = 10,
+  pagination = true,
 }: {
   name?: string;
   label?: string;
   current?: number;
   pageSize?: number;
+  pagination?: boolean;
 }): Promise<any> {
   const db = getInstance();
 
@@ -553,49 +651,79 @@ async function getTraits({
     WHERE 1=1
   `;
 
+  const params = { name, label };
+
   if (name) {
     sql += ` AND name = $name`;
   }
 
   if (label) {
     sql += ` AND label LIKE $label`;
+    params.label = `%${label}%`;
   }
 
-  return getPagedData({
-    current,
-    pageSize,
-    getRows: (limit, offset) => {
-      return db
-        .prepare(`${sql} LIMIT ? OFFSET ?`)
-        .all(limit, offset, { name, label });
-    },
-    getCount: () => {
-      // @ts-ignore
-      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get({ name, label })[
-        'COUNT(*)'
-      ];
-    },
-  });
+  if (pagination) {
+    return getPagedData({
+      current,
+      pageSize,
+      getRows: (limit, offset) => {
+        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
+      },
+      getCount: () => {
+        // @ts-ignore
+        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
+          'COUNT(*)'
+        ];
+      },
+    });
+  }
+  return db.prepare(`${sql}`).all(params);
 }
 
-// 新增、修改兵种
 function setTrait({ id, name, label }: DB.Trait): void {
   const db = getInstance();
-  db.prepare(
-    `
-    INSERT OR REPLACE INTO traits (id, name, label)
-    VALUES ($id, $name, $label)
+
+  if (id) {
+    db.prepare(
+      `
+    UPDATE traits SET name = $name, label = $label
+    WHERE id = $id
   `,
-  ).run({
-    id,
-    name,
-    label,
-  });
+    ).run({
+      id,
+      name,
+      label,
+    });
+  } else {
+    db.prepare(
+      `
+    INSERT INTO traits (name, label)
+    VALUES ($name, $label)
+  `,
+    ).run({
+      name,
+      label,
+    });
+  }
 }
 
-// 删除兵种
 function deleteTrait({ id }: { id?: number }) {
   const db = getInstance();
+
+  const card = db
+    .prepare(
+      `
+        SELECT * FROM cards
+        WHERE traitId = $id
+        LIMIT 1
+      `,
+    )
+    .get({ id });
+
+  if (card) {
+    return;
+  }
+
   db.prepare(
     `
     DELETE FROM traits
@@ -604,21 +732,22 @@ function deleteTrait({ id }: { id?: number }) {
   ).run({ id });
 }
 
-/** ******************************* abilities *********************************** */
+/** ******************************* 能力 *********************************** */
 
-// 获取能力关键字分页列表
 async function getAbilities({
   name,
   label,
   description,
   current = 1,
   pageSize = 10,
+  pagination = true,
 }: {
   name?: string;
   label?: string;
   description?: string;
   current?: number;
   pageSize?: number;
+  pagination?: boolean;
 }): Promise<any> {
   const db = getInstance();
 
@@ -628,52 +757,56 @@ async function getAbilities({
     WHERE 1=1
   `;
 
+  const params = { name, label, description };
+
   if (name) {
     sql += ` AND name = $name`;
   }
 
   if (label) {
     sql += ` AND label LIKE $label`;
+    params.label = `%${label}%`;
   }
 
   if (description) {
     sql += ` AND label LIKE $description`;
+    params.description = `%${description}%`;
   }
 
-  return getPagedData({
-    current,
-    pageSize,
-    getRows: (limit, offset) => {
-      return db
-        .prepare(`${sql} LIMIT ? OFFSET ?`)
-        .all(limit, offset, { name, label, description });
-    },
-    getCount: () => {
-      // @ts-ignore
-      return db
-        .prepare(`SELECT COUNT(*) FROM (${sql})`)
-        .get({ name, label, description })['COUNT(*)'];
-    },
-  });
+  if (pagination) {
+    return getPagedData({
+      current,
+      pageSize,
+      getRows: (limit, offset) => {
+        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
+      },
+      getCount: () => {
+        // @ts-ignore
+        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
+          'COUNT(*)'
+        ];
+      },
+    });
+  }
+  return db.prepare(`${sql}`).all(params);
 }
 
-// 新增、修改能力关键字
-function setAbility({ id, name, label, description }: DB.Ability): void {
+function setAbility({ id, name, label, sort, description }: DB.Ability): void {
   const db = getInstance();
   db.prepare(
     `
-    INSERT OR REPLACE INTO abilities (id, name, label, description)
-    VALUES ($id, $name, $label, $description)
+    INSERT OR REPLACE INTO abilities (id, name, label,sort, description)
+    VALUES ($id, $name, $label, $sort, $description)
   `,
   ).run({
     id,
     name,
     label,
+    sort,
     description,
   });
 }
 
-// 删除能力关键字
 function deleteAbility({ id }: { id?: number }) {
   const db = getInstance();
   db.prepare(
@@ -684,14 +817,129 @@ function deleteAbility({ id }: { id?: number }) {
   ).run({ id });
 }
 
-/** ******************************* cards *********************************** */
+/** ******************************* 卡包 *********************************** */
 
-// 获取卡片分页列表
+async function getCardPacks({
+  name,
+  label,
+  description,
+  current = 1,
+  pageSize = 10,
+  pagination = true,
+}: {
+  name?: string;
+  label?: string;
+  description?: string;
+  current?: number;
+  pageSize?: number;
+  pagination?: boolean;
+}): Promise<any> {
+  const db = getInstance();
+
+  let sql = `
+    SELECT *
+    FROM cardPacks
+    WHERE 1=1
+  `;
+
+  const params = { name, label, description };
+
+  if (name) {
+    sql += ` AND name = $name`;
+  }
+
+  if (label) {
+    sql += ` AND label LIKE $label`;
+    params.label = `%${label}%`;
+  }
+
+  if (description) {
+    sql += ` AND label LIKE $description`;
+    params.description = `%${description}%`;
+  }
+
+  if (pagination) {
+    return getPagedData({
+      current,
+      pageSize,
+      getRows: (limit, offset) => {
+        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
+      },
+      getCount: () => {
+        // @ts-ignore
+        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
+          'COUNT(*)'
+        ];
+      },
+    });
+  }
+  return db.prepare(`${sql}`).all(params);
+}
+
+function setCardPack({ id, name, label, sort, description }: DB.Ability): void {
+  const db = getInstance();
+
+  if (id) {
+    db.prepare(
+      `
+    UPDATE cardPacks SET name = $name, label = $label, sort = $sort, description = $description
+    WHERE id = $id
+  `,
+    ).run({
+      id,
+      name,
+      label,
+      sort,
+      description,
+    });
+  } else {
+    db.prepare(
+      `
+    INSERT INTO cardPacks (name, label,sort, description)
+    VALUES ($name, $label, $sort, $description)
+  `,
+    ).run({
+      name,
+      label,
+      sort,
+      description,
+    });
+  }
+}
+
+function deleteCardPack({ id }: { id?: number }) {
+  const db = getInstance();
+
+  const card = db
+    .prepare(
+      `
+        SELECT * FROM cards
+        WHERE cardPackId = $id
+        LIMIT 1
+      `,
+    )
+    .get({ id });
+
+  if (card) {
+    return;
+  }
+
+  db.prepare(
+    `
+    DELETE FROM cardPacks
+    WHERE id = $id
+  `,
+  ).run({ id });
+}
+
+/** ******************************* 卡片 *********************************** */
+
 async function getCards({
   roleId,
   typeId,
   traitId,
   rarityId,
+  cardPackId,
   cost,
   name,
   isToken,
@@ -700,17 +948,38 @@ async function getCards({
   isReborn,
   current = 1,
   pageSize = 10,
+  pagination = true,
 }: DB.Card & {
   current?: number;
   pageSize?: number;
+  pagination?: boolean;
 }): Promise<any> {
   const db = getInstance();
 
   let sql = `
-    SELECT *
+    SELECT cards.*, roles.label as roleLabel, types.label as typeLabel, traits.label as traitLabel, rarities.label as rarityLabel, cardPacks.label as cardPackLabel
     FROM cards
+    JOIN roles ON cards.roleId = roles.id
+    JOIN types ON cards.typeId = types.id
+    JOIN traits ON cards.traitId = traits.id
+    JOIN rarities ON cards.rarityId = rarities.id
+    JOIN cardPacks ON cards.cardPackId = cardPacks.id
     WHERE 1=1
   `;
+
+  const params = {
+    roleId,
+    typeId,
+    traitId,
+    rarityId,
+    cardPackId,
+    cost,
+    name,
+    isToken,
+    tokenIds,
+    parentId,
+    isReborn,
+  };
 
   if (roleId) {
     sql += ` AND roleId = $roleId`;
@@ -724,11 +993,15 @@ async function getCards({
   if (rarityId) {
     sql += ` AND rarityId = $rarityId`;
   }
+  if (cardPackId) {
+    sql += ` AND cardPackId = $cardPackId`;
+  }
   if (cost) {
     sql += ` AND cost = $cost`;
   }
   if (name) {
-    sql += ` AND name = $name`;
+    sql += ` AND name LIKE $name`;
+    params.name = `%${name}%`;
   }
   if (isToken) {
     sql += ` AND isToken = $isToken`;
@@ -743,48 +1016,31 @@ async function getCards({
     sql += ` AND isReborn = $isReborn`;
   }
 
-  return getPagedData({
-    current,
-    pageSize,
-    getRows: (limit, offset) => {
-      return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, {
-        roleId,
-        typeId,
-        traitId,
-        rarityId,
-        cost,
-        name,
-        isToken,
-        tokenIds,
-        parentId,
-        isReborn,
-      });
-    },
-    getCount: () => {
-      // @ts-ignore
-      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get({
-        roleId,
-        typeId,
-        traitId,
-        rarityId,
-        cost,
-        name,
-        isToken,
-        tokenIds,
-        parentId,
-        isReborn,
-      })['COUNT(*)'];
-    },
-  });
+  if (pagination) {
+    return getPagedData({
+      current,
+      pageSize,
+      getRows: (limit, offset) => {
+        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
+      },
+      getCount: () => {
+        // @ts-ignore
+        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
+          'COUNT(*)'
+        ];
+      },
+    });
+  }
+  return db.prepare(`${sql}`).all(params);
 }
 
-// 新增、修改卡片
 function setCard({
   id,
   roleId,
   typeId,
   traitId,
   rarityId,
+  cardPackId,
   cost,
   name,
   isToken,
@@ -794,30 +1050,68 @@ function setCard({
   image,
 }: DB.Card): void {
   const db = getInstance();
-  db.prepare(
-    `
-    INSERT OR REPLACE INTO abilities (id, roleId, typeId, traitId, rarityId, cost, name, isToken, tokenIds, parentId, isReborn, image)
-    VALUES ($id, $roleId, $typeId, $traitId, $rarityId, $cost, $name, $isToken, $tokenIds, $parentId, $isReborn, $image)
+
+  if (id) {
+    db.prepare(
+      `
+    UPDATE cards SET roleId = $roleId, typeId = $typeId, traitId = $traitId, rarityId = $rarityId, cardPackId = $cardPackId, cost = $cost, name = $name, isToken = $isToken, tokenIds = $tokenIds, parentId = $parentId, isReborn = $isReborn, image = $image
+    WHERE id = $id
   `,
-  ).run({
-    id,
-    roleId,
-    typeId,
-    traitId,
-    rarityId,
-    cost,
-    name,
-    isToken,
-    tokenIds,
-    parentId,
-    isReborn,
-    image,
-  });
+    ).run({
+      id,
+      roleId,
+      typeId,
+      traitId,
+      rarityId,
+      cardPackId,
+      cost,
+      name,
+      isToken,
+      tokenIds,
+      parentId,
+      isReborn,
+      image,
+    });
+  } else {
+    db.prepare(
+      `
+    INSERT INTO cards (roleId, typeId, traitId, rarityId, cardPackId, cost, name, isToken, tokenIds, parentId, isReborn, image)
+    VALUES ($roleId, $typeId, $traitId, $rarityId, $cardPackId, $cost, $name, $isToken, $tokenIds, $parentId, $isReborn, $image)
+  `,
+    ).run({
+      roleId,
+      typeId,
+      traitId,
+      rarityId,
+      cardPackId,
+      cost,
+      name,
+      isToken,
+      tokenIds,
+      parentId,
+      isReborn,
+      image,
+    });
+  }
 }
 
-// 删除卡片
 function deleteCard({ id }: { id?: number }) {
   const db = getInstance();
+
+  const cardDetails = db
+    .prepare(
+      `
+        SELECT * FROM cardDetails
+        WHERE cardId = $id
+        LIMIT 1
+      `,
+    )
+    .get({ id });
+
+  if (cardDetails) {
+    return;
+  }
+
   db.prepare(
     `
     DELETE FROM cards
@@ -826,9 +1120,8 @@ function deleteCard({ id }: { id?: number }) {
   ).run({ id });
 }
 
-/** ******************************* cardDetails *********************************** */
+/** ******************************* 卡片详情 *********************************** */
 
-// 获取卡片详情分页列表
 async function getCardDetails({
   cardId,
   evolutionStage,
@@ -837,9 +1130,11 @@ async function getCardDetails({
   description,
   current = 1,
   pageSize = 10,
+  pagination = true,
 }: DB.CardDetails & {
   current?: number;
   pageSize?: number;
+  pagination?: boolean;
 }): Promise<any> {
   const db = getInstance();
 
@@ -848,6 +1143,14 @@ async function getCardDetails({
     FROM cardDetails
     WHERE 1=1
   `;
+
+  const params = {
+    cardId,
+    evolutionStage,
+    attack,
+    health,
+    description,
+  };
 
   if (cardId) {
     sql += ` AND cardId = $cardId`;
@@ -864,34 +1167,27 @@ async function getCardDetails({
   }
   if (description) {
     sql += ` AND description LIKE $description`;
+    params.description = `%${description}%`;
   }
 
-  return getPagedData({
-    current,
-    pageSize,
-    getRows: (limit, offset) => {
-      return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, {
-        cardId,
-        evolutionStage,
-        attack,
-        health,
-        description,
-      });
-    },
-    getCount: () => {
-      // @ts-ignore
-      return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get({
-        cardId,
-        evolutionStage,
-        attack,
-        health,
-        description,
-      })['COUNT(*)'];
-    },
-  });
+  if (pagination) {
+    return getPagedData({
+      current,
+      pageSize,
+      getRows: (limit, offset) => {
+        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
+      },
+      getCount: () => {
+        // @ts-ignore
+        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
+          'COUNT(*)'
+        ];
+      },
+    });
+  }
+  return db.prepare(`${sql}`).all(params);
 }
 
-// 新增、修改职业
 function setCardDetails({
   id,
   cardId,
@@ -916,7 +1212,6 @@ function setCardDetails({
   });
 }
 
-// 删除职业
 function deleteCardDetails({ id }: { id?: number }) {
   const db = getInstance();
   db.prepare(
@@ -949,6 +1244,9 @@ const dataInterface: ServerInterface = {
   getAbilities,
   setAbility,
   deleteAbility,
+  getCardPacks,
+  setCardPack,
+  deleteCardPack,
   getCards,
   setCard,
   deleteCard,
