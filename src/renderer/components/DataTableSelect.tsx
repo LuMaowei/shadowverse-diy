@@ -68,10 +68,10 @@ export default function DataTableSelect(
 
   return (
     <Select
-      {...rest}
       allowClear
       options={options}
       fieldNames={{ label: currentApi.label, value: currentApi.value }}
+      {...rest}
     />
   );
 }

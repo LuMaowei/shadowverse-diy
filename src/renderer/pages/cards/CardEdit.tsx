@@ -1,7 +1,9 @@
 import { JSX, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Flex } from 'antd';
+import { Flex, Form, Select } from 'antd';
 import CardFrame from '../../components/cardEdit/CardFrame';
+import CardDescription from '../../components/cardEdit/CardDescription';
+import DataTableSelect from '../../components/DataTableSelect';
 
 export default function CardEdit(): JSX.Element {
   const { id } = useParams();
@@ -12,16 +14,7 @@ export default function CardEdit(): JSX.Element {
   const [traitInfo, setTraitInfo] = useState<DB.Trait>({});
   const [rarityInfo, setRarityInfo] = useState<DB.Rarity>({});
   const [frameInfo, setFrameInfo] = useState<DB.Frame>({});
-  console.log(
-    cardInfo,
-    cardDetails,
-    roleInfo,
-    typeInfo,
-    traitInfo,
-    rarityInfo,
-    frameInfo,
-  );
-  console.log(roleInfo.background?.toString());
+  const [form] = Form.useForm();
 
   const roleBackground = roleInfo.background?.replace(/\\/g, '\\\\');
   const roleGem = roleInfo.gem?.replace(/\\/g, '\\\\');
@@ -92,32 +85,54 @@ export default function CardEdit(): JSX.Element {
   return (
     <div
       className="card-container"
-      style={{
-        backgroundImage: `url("file://${roleBackground}")`,
-      }}
+      style={
+        {
+          // backgroundImage: `url("file://${roleBackground}")`,
+        }
+      }
     >
-      <div className="card-head">
-        <Flex justify="space-between" align="center" gap={8}>
-          <div>职业</div>
-          <img src={roleEmblem} alt="职业徽章" />
-          <div>{roleInfo.label}</div>
-        </Flex>
-        <Flex justify="space-between" align="center" gap={8}>
-          <div>类型</div>
-          <div className="w-[30px]" />
-          <div>{traitInfo.label}</div>
-        </Flex>
-      </div>
-      <div className="card-content">
-        <CardFrame
-          cardFrame={cardFrame}
-          name={cardInfo.name}
-          cost={cardInfo.cost}
-          attack={cardDetails[0]?.attack}
-          health={cardDetails[0]?.health}
-        />
-        <div className="card-description-container">内容</div>
-      </div>
+      <div className="card-container-mask" />
+      <Form className="card-form" form={form}>
+        <div className="card-head">
+          <Flex align="center" gap={8}>
+            <div>职业</div>
+            <img src={roleEmblem} alt="职业徽章" />
+            <Form.Item noStyle name="roleId">
+              <DataTableSelect
+                className="card-head-select min-w-[96px]"
+                allowClear={false}
+                dataTable="role"
+                variant="borderless"
+              />
+            </Form.Item>
+          </Flex>
+          <Flex align="center" gap={8}>
+            <div>类型</div>
+            <div className="w-[30px]" />
+            <Form.Item noStyle name="traitId">
+              <DataTableSelect
+                className="card-head-select min-w-[96px]"
+                allowClear={false}
+                dataTable="trait"
+                variant="borderless"
+              />
+            </Form.Item>
+          </Flex>
+        </div>
+        <div className="card-main-border" />
+        <div className="card-content">
+          <CardFrame
+            cardFrame={cardFrame}
+            roleGem={roleGem}
+            name={cardInfo.name}
+            cost={cardInfo.cost}
+            attack={cardDetails[0]?.attack}
+            health={cardDetails[0]?.health}
+            image={cardInfo.image}
+          />
+          <CardDescription details={cardDetails} />
+        </div>
+      </Form>
     </div>
   );
 }

@@ -15,37 +15,57 @@ header {
 }
 
 .card-container {
+  color: #fff;
   font-family: 'HuakangWeibei', serif;
-  width: 1600px;
-  height: 900px;
+  background-size: cover;
+  width: 1270px;
+  height: 715px;
   overflow: auto;
   position: relative;
-  color: #fff;
-  padding: 88px 88px 40px 88px;
+
+  .card-form {
+    color: #fff;
+    font-family: 'HuakangWeibei', serif;
+  }
 
   .card-head {
     display: flex;
     flex-direction: column;
-    align-items: end;
-    padding-bottom: 16px;
-    font-size: 28px;
-    height: 100px;
+    padding-top: 40px;
+    padding-left: 945px;
+    font-size: 24px;
+    height: 96px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-main-border {
+    background-image: url("../../assets/resources/cardContent/mainBorder.png");
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin: 20px 90px 10px 90px;
+    height: 12px;
+    position: relative;
+    z-index: 1;
   }
 
   .card-content {
     display: flex;
-    gap: 24px;
-    height: 614px;
+    height: 498px;
+    padding-left: 90px;
+    gap: 30px;
+    position: relative;
+    z-index: 2;
   }
 
   .card-frame-container {
     position: relative;
-    height: 615px;
-    width: 472px;
+    height: 498px;
+    width: 380px;
   }
 
   .card-frame-background {
-    /*transform: scale(0.88);*/
     cursor: pointer;
   }
 
@@ -64,9 +84,26 @@ header {
   }
 
   .card-description-container {
-    flex: 1;
-    border: 1px solid #fff;
-    background: #060a0b;
+    background-image: url("../../assets/resources/cardContent/contentArea.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 680px;
+    height: 478px;
+    position: relative;
+  }
+
+  .card-description-follower-attr {
+    background-image: url("../../assets/resources/cardContent/followerMainBorder.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 680px;
+    height: 70px;
+    position: absolute;
+    top: 16px;
+    display: flex;
+    padding: 14px 48px;
+    font-size: 26px;
+    line-height: 26px;
   }
 
   .card-frame-name-container {
@@ -85,17 +122,57 @@ header {
     font-size: 32px;
     white-space: nowrap;
   }
+
+  .card-details-attr {
+    position: absolute;
+    width: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .crad-details-follower-unevolved {
+    height: calc(50% - 74px);
+    background-image: url("../../assets/resources/cardContent/underLine.png");
+    margin: 68px 48px 0 48px;
+    font-size: 16px;
+  }
+
+  .crad-details-follower-evolved {
+    margin: 50px 48px 0 48px;
+  }
+
+  .card-details-description-textarea {
+    background-color: transparent;
+    color: #fff;
+    height: 100%;
+  }
+
+  .card-head-select {
+    .ant-select-selector {
+      padding: 0;
+    }
+
+    .ant-select-arrow {
+      display: none;
+    }
+
+    .ant-select-selection-item {
+      color: #fff;
+      font-family: 'HuakangWeibei', serif;
+      font-size: 24px;
+    }
+  }
 }
 
-/*.card-container::before {*/
-/*  content: '';*/
-/*  position: absolute;*/
-/*  top: 0;*/
-/*  right: 0;*/
-/*  bottom: 0;*/
-/*  left: 0;*/
-/*  background-color: rgba(0, 0, 0, 0.5);*/
-/*}*/
+.card-container-mask {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
 
 
 .card {
