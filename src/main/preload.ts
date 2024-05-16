@@ -32,6 +32,7 @@ const {
   getCardDetails,
   setCardDetails,
   deleteCardDetails,
+  getCard,
 } = sqlClient;
 
 const getAssetPath = (...paths: string[]): string => {
@@ -96,6 +97,7 @@ const contextHandler = {
     getCardDetails,
     setCardDetails,
     deleteCardDetails,
+    getCard,
   },
 };
 

@@ -84,6 +84,7 @@ export type DataInterface = {
   ) => Promise<any>;
   setCardDetails: (params: DB.CardDetails) => void;
   deleteCardDetails: (params: DB.CardDetails) => void;
+  getCard: (params: DB.Card) => Promise<any>;
 };
 
 export type ClientInterface = DataInterface & {

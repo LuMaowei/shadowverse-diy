@@ -1,18 +1,18 @@
 import React from 'react';
-import { Upload } from 'antd';
 import type { UploadFile } from 'antd';
+import { Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
 
 export default function CardImageUpload(props: {
   value?: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
 }) {
   const { value, onChange } = props;
 
   const beforeUpload = (file: UploadFile) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      onChange(reader.result as string);
+      onChange?.(reader.result as string);
     };
     // @ts-ignore
     reader.readAsDataURL(file);

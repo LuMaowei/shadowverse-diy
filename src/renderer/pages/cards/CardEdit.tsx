@@ -1,41 +1,90 @@
 import { JSX, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Flex, Form, Select } from 'antd';
+import { Form } from 'antd';
 import CardFrame from '../../components/cardEdit/CardFrame';
 import CardDescription from '../../components/cardEdit/CardDescription';
-import DataTableSelect from '../../components/DataTableSelect';
+import CardHead from '../../components/cardEdit/CardHead';
+
+function getFixedImagePath(imagePath: string): string {
+  return imagePath.replace(/\\/g, '\\\\');
+}
 
 export default function CardEdit(): JSX.Element {
   const { id } = useParams();
-  const [cardInfo, setCardInfo] = useState<DB.Card>({});
-  const [cardDetails, setCardDetails] = useState<DB.CardDetails[]>([]);
-  const [roleInfo, setRoleInfo] = useState<DB.Role>({});
-  const [typeInfo, setTypeInfo] = useState<DB.Type>({});
-  const [traitInfo, setTraitInfo] = useState<DB.Trait>({});
-  const [rarityInfo, setRarityInfo] = useState<DB.Rarity>({});
-  const [frameInfo, setFrameInfo] = useState<DB.Frame>({});
+  const [roleBackground, setRoleBackground] = useState<string>('');
+  const [roleGem, setRoleGem] = useState<string>('');
+  const [roleEmblem, setRoleEmblem] = useState<string>('');
+  const [cardFrame, setCardFrame] = useState<string>('');
   const [form] = Form.useForm();
+  const roleId = Form.useWatch('roleId', form);
+  const rarityId = Form.useWatch('rarityId', form);
+  const typeId = Form.useWatch('typeId', form);
 
-  const roleBackground = roleInfo.background?.replace(/\\/g, '\\\\');
-  const roleGem = roleInfo.gem?.replace(/\\/g, '\\\\');
-  const roleEmblem = roleInfo.emblem?.replace(/\\/g, '\\\\');
-  const cardFrame = frameInfo.frame?.replace(/\\/g, '\\\\');
+  const fetchFrameInfo = (params: { rarityId?: number; typeId?: number }) => {
+    window.Context.sqlClient
+      .getFrames({ ...params, pagination: false })
+      .then((res) => {
+        setCardFrame(getFixedImagePath(res[0].frame));
+      });
+  };
+
+  const fetchRoleInfo = (params: { roleId?: number }) => {
+    window.Context.sqlClient
+      .getRoles({ ...params, pagination: false })
+      .then((res) => {
+        setRoleGem(getFixedImagePath(res[0].gem));
+        setRoleBackground(getFixedImagePath(res[0].background));
+        setRoleEmblem(getFixedImagePath(res[0].emblem));
+      });
+  };
 
   const fetchCardInfo = () => {
-    window.Context.sqlClient
-      .getCards({ id: Number(id), pagination: false })
-      .then((res) => {
-        setCardInfo(res[0]);
-      });
+    window.Context.sqlClient.getCard({ id: Number(id) }).then((res) => {
+      const {
+        evolutionStages,
+        attacks,
+        healths,
+        cardDetailsDescriptions,
+        ...rest
+      } = res;
+      fetchFrameInfo({ rarityId: rest.rarityId, typeId: rest.typeId });
+      const [unevolved, evolved] =
+        evolutionStages?.split(',').map((item: any) => Number(item)) || [];
+      const [unevolvedAttack, evolvedAttack] =
+        attacks?.split(',').map((item: any) => Number(item)) || [];
+      const [unevolvedHealth, evolvedHealth] =
+        healths?.split(',').map((item: any) => Number(item)) || [];
+      const [unevolvedDescription, evolvedDescription] =
+        cardDetailsDescriptions?.split(',') || [];
+      const cardDetails: {
+        unevolved?: number;
+        unevolvedAttack?: number;
+        unevolvedHealth?: number;
+        unevolvedDescription?: string;
+        evolved?: number;
+        evolvedAttack?: number;
+        evolvedHealth?: number;
+        evolvedDescription?: string;
+      } = {};
+      cardDetails.unevolved = unevolved;
+      cardDetails.unevolvedAttack = unevolvedAttack;
+      cardDetails.unevolvedHealth = unevolvedHealth;
+      cardDetails.unevolvedDescription = unevolvedDescription;
+      if (evolved) {
+        cardDetails.evolved = evolved;
+        cardDetails.evolvedAttack = evolvedAttack;
+        cardDetails.evolvedHealth = evolvedHealth;
+        cardDetails.evolvedDescription = evolvedDescription;
+      }
+      setRoleBackground(getFixedImagePath(rest.roleBackground));
+      setRoleGem(getFixedImagePath(rest.roleGem));
+      setRoleEmblem(getFixedImagePath(rest.roleEmblem));
+      form.setFieldsValue({ ...rest, ...cardDetails });
+    });
+  };
 
-    window.Context.sqlClient
-      .getCardDetails({
-        cardId: Number(id),
-        pagination: false,
-      })
-      .then((res) => {
-        setCardDetails(res);
-      });
+  const saveCardInfo = () => {
+    const values = form.getFieldsValue();
   };
 
   useEffect(() => {
@@ -44,93 +93,32 @@ export default function CardEdit(): JSX.Element {
     }
   }, [id]);
 
-  const fetchRelatedInfo = () => {
-    window.Context.sqlClient
-      .getRoles({ id: Number(cardInfo.roleId), pagination: false })
-      .then((res) => {
-        setRoleInfo(res[0]);
-      });
-    window.Context.sqlClient
-      .getTypes({ id: Number(cardInfo.typeId), pagination: false })
-      .then((res) => {
-        setTypeInfo(res[0]);
-      });
-    window.Context.sqlClient
-      .getTraits({ id: Number(cardInfo.traitId), pagination: false })
-      .then((res) => {
-        setTraitInfo(res[0]);
-      });
-    window.Context.sqlClient
-      .getRarities({ id: Number(cardInfo.rarityId), pagination: false })
-      .then((res) => {
-        setRarityInfo(res[0]);
-      });
-    window.Context.sqlClient
-      .getFrames({
-        typeId: Number(cardInfo.typeId),
-        rarityId: Number(cardInfo.rarityId),
-        pagination: false,
-      })
-      .then((res) => {
-        setFrameInfo(res[0]);
-      });
-  };
+  useEffect(() => {
+    if (roleId) {
+      fetchRoleInfo({ roleId });
+    }
+  }, [roleId]);
 
   useEffect(() => {
-    if (cardInfo.id) {
-      fetchRelatedInfo();
+    if (typeId && rarityId) {
+      fetchFrameInfo({ typeId, rarityId });
     }
-  }, [cardInfo.id]);
+  }, [typeId, rarityId]);
 
   return (
     <div
       className="card-container"
-      style={
-        {
-          // backgroundImage: `url("file://${roleBackground}")`,
-        }
-      }
+      style={{
+        backgroundImage: `url("file://${roleBackground}")`,
+      }}
     >
       <div className="card-container-mask" />
       <Form className="card-form" form={form}>
-        <div className="card-head">
-          <Flex align="center" gap={8}>
-            <div>职业</div>
-            <img src={roleEmblem} alt="职业徽章" />
-            <Form.Item noStyle name="roleId">
-              <DataTableSelect
-                className="card-head-select min-w-[96px]"
-                allowClear={false}
-                dataTable="role"
-                variant="borderless"
-              />
-            </Form.Item>
-          </Flex>
-          <Flex align="center" gap={8}>
-            <div>类型</div>
-            <div className="w-[30px]" />
-            <Form.Item noStyle name="traitId">
-              <DataTableSelect
-                className="card-head-select min-w-[96px]"
-                allowClear={false}
-                dataTable="trait"
-                variant="borderless"
-              />
-            </Form.Item>
-          </Flex>
-        </div>
+        <CardHead roleEmblem={roleEmblem} />
         <div className="card-main-border" />
         <div className="card-content">
-          <CardFrame
-            cardFrame={cardFrame}
-            roleGem={roleGem}
-            name={cardInfo.name}
-            cost={cardInfo.cost}
-            attack={cardDetails[0]?.attack}
-            health={cardDetails[0]?.health}
-            image={cardInfo.image}
-          />
-          <CardDescription details={cardDetails} />
+          <CardFrame cardFrame={cardFrame} roleGem={roleGem} />
+          <CardDescription />
         </div>
       </Form>
     </div>

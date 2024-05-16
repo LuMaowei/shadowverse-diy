@@ -2,8 +2,8 @@ import { InputNumber } from 'antd';
 import { useState } from 'react';
 
 export default function CardDetailsInputNumber(props: {
-  value: number | null;
-  onChange: (value: number | null) => void;
+  value?: number | null;
+  onChange?: (value: number | null) => void;
 }) {
   const { value, onChange } = props;
   const [disabled, setDisabled] = useState(true);

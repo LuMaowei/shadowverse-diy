@@ -41,11 +41,11 @@ function getNumberImagePath(number: number) {
 }
 
 export default function CardSymd(props: {
-  value: number;
-  onChange: (value: number | null) => void;
+  value?: number;
+  onChange?: (value: number | null) => void;
 }) {
   const { value, onChange } = props;
-  const numberImagePath = getNumberImagePath(value);
+  const numberImagePath = getNumberImagePath(value || 0);
   const [disabled, setDisabled] = useState(true);
 
   if (disabled) {

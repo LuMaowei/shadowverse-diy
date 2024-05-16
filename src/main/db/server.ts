@@ -1222,6 +1222,55 @@ function deleteCardDetails({ id }: { id?: number }) {
   ).run({ id });
 }
 
+async function getCard({ id }: DB.Card): Promise<any> {
+  const db = getInstance();
+
+  const sql = `
+    SELECT
+    cards.*,
+    roles.name AS roleName,
+    roles.label AS roleLabel,
+    roles.avatar AS roleAvatar,
+    roles.gem AS roleGem,
+    roles.emblem AS roleEmblem,
+    roles.background AS roleBackground,
+    types.name AS typeName,
+    types.label AS typeLabel,
+    traits.name AS traitName,
+    traits.label AS traitLabel,
+    rarities.name AS rarityName,
+    rarities.label AS rarityLabel,
+    cardPacks.name AS cardPackName,
+    cardPacks.label AS cardPackLabel,
+    cardPacks.sort AS cardPackSort,
+    cardPacks.description AS cardPackDescription,
+    GROUP_CONCAT(cardDetails.evolutionStage) AS evolutionStages,
+    GROUP_CONCAT(cardDetails.attack) AS attacks,
+    GROUP_CONCAT(cardDetails.health) AS healths,
+    GROUP_CONCAT(cardDetails.description) AS cardDetailsDescriptions
+    FROM
+        cards
+    LEFT JOIN
+        roles ON cards.roleId = roles.id
+    LEFT JOIN
+        types ON cards.typeId = types.id
+    LEFT JOIN
+        traits ON cards.traitId = traits.id
+    LEFT JOIN
+        rarities ON cards.rarityId = rarities.id
+    LEFT JOIN
+        cardPacks ON cards.cardPackId = cardPacks.id
+    LEFT JOIN
+        cardDetails ON cards.id = cardDetails.cardId
+    WHERE
+        cards.id = $id
+    GROUP BY
+        cards.id;
+  `;
+
+  return db.prepare(`${sql}`).get({ id });
+}
+
 const dataInterface: ServerInterface = {
   close,
   removeDB,
@@ -1253,6 +1302,7 @@ const dataInterface: ServerInterface = {
   getCardDetails,
   setCardDetails,
   deleteCardDetails,
+  getCard,
 };
 
 export default dataInterface;

@@ -75,6 +75,29 @@ declare global {
       health?: number;
       description?: string;
     }
+
+    interface CardSingle extends DB.Card {
+      roleName?: string;
+      roleLabel?: string;
+      roleAvatar?: string;
+      roleGem?: string;
+      roleEmblem?: string;
+      roleBackground?: string;
+      typeName?: string;
+      typeLabel?: string;
+      traitName?: string;
+      traitLabel?: string;
+      rarityName?: string;
+      rarityLabel?: string;
+      cardPackName?: string;
+      cardPackLabel?: string;
+      cardPackSort?: number;
+      cardPackDescription?: string;
+      evolutionStages?: string;
+      attacks?: string;
+      healths?: string;
+      cardDetailsDescriptions?: string;
+    }
   }
 }
 

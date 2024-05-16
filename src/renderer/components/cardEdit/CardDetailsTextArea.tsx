@@ -2,8 +2,8 @@ import { Input } from 'antd';
 import { useState } from 'react';
 
 export default function CardDetailsTextArea(props: {
-  value: string;
-  onChange: (value: string) => void;
+  value?: string;
+  onChange?: (value: string) => void;
 }) {
   const { value, onChange } = props;
   const [disabled, setDisabled] = useState(false);
@@ -17,7 +17,7 @@ export default function CardDetailsTextArea(props: {
       className="card-details-description-textarea"
       autoFocus
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => onChange?.(e.target.value)}
       // onPressEnter={() => {
       //   setDisabled(true);
       // }}
