@@ -4,16 +4,12 @@ import CardFrameInput from './CardFrameInput';
 import CardImageUpload from './CardImageUpload';
 
 export default function CardFrame(props) {
-  const { cardFrame, roleGem } = props;
+  const { frame, gem } = props;
 
   return (
     <div className="card-frame-container">
-      <img className="card-frame-background" src={cardFrame} alt="" />
-      <img
-        className="absolute left-[180px] bottom-[44px]"
-        src={roleGem}
-        alt=""
-      />
+      <img className="card-frame-background" src={frame} alt="" />
+      <img className="absolute left-[180px] bottom-[44px]" src={gem} alt="" />
       <div className="absolute w-[290px] h-[363px] top-[81px] left-[47px]">
         <Form.Item noStyle name="image">
           <CardImageUpload />

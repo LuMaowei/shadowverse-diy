@@ -184,482 +184,24 @@ async function getPagedData({
   };
 }
 
-/** ******************************* 职业 *********************************** */
-
-// 获取职业分页列表
-async function getRoles({
-  name,
-  label,
-  current = 1,
-  pageSize = 10,
-  pagination = true,
-}: {
-  name?: string;
-  label?: string;
-  current?: number;
-  pageSize?: number;
-  pagination?: boolean;
-}): Promise<any> {
-  const db = getInstance();
-
-  let sql = `
-    SELECT *
-    FROM roles
-    WHERE 1=1
-  `;
-
-  const params = { name, label };
-
-  if (name) {
-    sql += ` AND name = $name`;
-  }
-
-  if (label) {
-    sql += ` AND label LIKE $label`;
-    params.label = `%${label}%`;
-  }
-
-  if (pagination) {
-    return getPagedData({
-      current,
-      pageSize,
-      getRows: (limit, offset) => {
-        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
-      },
-      getCount: () => {
-        // @ts-ignore
-        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
-          'COUNT(*)'
-        ];
-      },
-    });
-  }
-  return db.prepare(`${sql}`).all(params);
-}
-
-// 新增、修改职业
-function setRole({
-  id,
-  name,
-  label,
-  avatar,
-  gem,
-  emblem,
-  background,
-}: DB.Role): void {
-  const db = getInstance();
-
-  if (id) {
-    db.prepare(
-      `
-        UPDATE roles SET name = $name, label = $label, avatar = $avatar, gem = $gem, emblem = $emblem, background = $background
-        WHERE id = $id
-      `,
-    ).run({
-      id,
-      name,
-      label,
-      avatar,
-      gem,
-      emblem,
-      background,
-    });
-  } else {
-    db.prepare(
-      `
-    INSERT INTO roles (name, label, avatar, gem, emblem, background)
-    VALUES ($name, $label, $avatar, $gem, $emblem, $background)
-  `,
-    ).run({
-      id,
-      name,
-      label,
-      avatar,
-      gem,
-      emblem,
-      background,
-    });
-  }
-}
-
-// 删除职业
-function deleteRole({ id }: { id?: number }) {
-  const db = getInstance();
-
-  const card = db
-    .prepare(
-      `
-        SELECT * FROM cards
-        WHERE roleId = $id
-        LIMIT 1
-      `,
-    )
-    .get({ id });
-
-  if (card) {
-    return;
-  }
-
-  db.prepare(
-    `
-    DELETE FROM roles
-    WHERE id = $id
-  `,
-  ).run({ id });
-}
-
-/** ******************************* 卡片类型 *********************************** */
-
-async function getTypes({
-  name,
-  label,
-  current = 1,
-  pageSize = 10,
-  pagination = true,
-}: {
-  name?: string;
-  label?: string;
-  current?: number;
-  pageSize?: number;
-  pagination?: boolean;
-}): Promise<any> {
-  const db = getInstance();
-
-  let sql = `
-    SELECT *
-    FROM types
-    WHERE 1=1
-  `;
-
-  const params = { name, label };
-
-  if (name) {
-    sql += ` AND name = $name`;
-  }
-
-  if (label) {
-    sql += ` AND label LIKE $label`;
-    params.label = `%${label}%`;
-  }
-
-  if (pagination) {
-    return getPagedData({
-      current,
-      pageSize,
-      getRows: (limit, offset) => {
-        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
-      },
-      getCount: () => {
-        // @ts-ignore
-        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
-          'COUNT(*)'
-        ];
-      },
-    });
-  }
-  return db.prepare(`${sql}`).all(params);
-}
-
-function setType({ id, name, label }: DB.Type): void {
-  const db = getInstance();
-  if (id) {
-    db.prepare(
-      `
-      UPDATE types
-      SET name = $name, label = $label
-      WHERE id = $id
-    `,
-    ).run({
-      id,
-      name,
-      label,
-    });
-  } else {
-    const info = db
-      .prepare(
-        `
-        INSERT INTO types (name, label)
-        VALUES ($name, $label)
-        `,
-      )
-      .run({
-        name,
-        label,
-      });
-
-    const newTypeId = info.lastInsertRowid;
-    const rarities = db.prepare('SELECT id FROM rarities').all() as DB.Rarity[];
-
-    rarities.forEach((rarity) => {
-      db.prepare(
-        'INSERT INTO frames (typeId, rarityId, frame) VALUES (?, ?, ?)',
-      ).run(newTypeId, rarity.id, '');
-    });
-  }
-}
-
-function deleteType({ id }: { id?: number }) {
-  const db = getInstance();
-
-  const tables = ['frames', 'cards'];
-
-  for (let i = 0; i < tables.length; i += 1) {
-    // 检查当前表中是否存在roleId为传入id的数据
-    const data = db
-      .prepare(
-        `
-      SELECT * FROM ${tables[i]}
-      WHERE typeId = $id
-      LIMIT 1
-      `,
-      )
-      .get({ id });
-
-    if (data) {
-      return;
-    }
-  }
-
-  db.prepare(
-    `
-    DELETE FROM types
-    WHERE id = $id
-  `,
-  ).run({ id });
-}
-
-/** ******************************* 稀有度 *********************************** */
-
-async function getRarities({
-  name,
-  label,
-  current = 1,
-  pageSize = 10,
-  pagination = true,
-}: {
-  name?: string;
-  label?: string;
-  current?: number;
-  pageSize?: number;
-  pagination?: boolean;
-}): Promise<any> {
-  const db = getInstance();
-
-  let sql = `
-    SELECT *
-    FROM rarities
-    WHERE 1=1
-  `;
-
-  const params = { name, label };
-
-  if (name) {
-    sql += ` AND name = $name`;
-  }
-
-  if (label) {
-    sql += ` AND label LIKE $label`;
-    params.label = `%${label}%`;
-  }
-
-  if (pagination) {
-    return getPagedData({
-      current,
-      pageSize,
-      getRows: (limit, offset) => {
-        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
-      },
-      getCount: () => {
-        // @ts-ignore
-        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
-          'COUNT(*)'
-        ];
-      },
-    });
-  }
-  return db.prepare(`${sql}`).all(params);
-}
-
-function setRarity({ id, name, label }: DB.Rarity): void {
-  const db = getInstance();
-  if (id) {
-    db.prepare(
-      `
-      UPDATE rarities
-      SET name = $name, label = $label
-      WHERE id = $id
-    `,
-    ).run({
-      id,
-      name,
-      label,
-    });
-  } else {
-    const info = db
-      .prepare(
-        `
-        INSERT INTO rarities (name, label)
-        VALUES ($name, $label)
-        `,
-      )
-      .run({
-        name,
-        label,
-      });
-
-    const newRarityId = info.lastInsertRowid;
-    const types = db.prepare('SELECT id FROM types').all() as DB.Type[];
-
-    types.forEach((type) => {
-      db.prepare(
-        'INSERT INTO frames (rarityId, typeId, frame) VALUES (?, ?, ?)',
-      ).run(newRarityId, type.id, '');
-    });
-  }
-}
-
-function deleteRarity({ id }: { id?: number }) {
-  const db = getInstance();
-
-  const tables = ['frames', 'cards'];
-
-  for (let i = 0; i < tables.length; i += 1) {
-    // 检查当前表中是否存在roleId为传入id的数据
-    const data = db
-      .prepare(
-        `
-      SELECT * FROM ${tables[i]}
-      WHERE rarityId = $id
-      LIMIT 1
-      `,
-      )
-      .get({ id });
-
-    if (data) {
-      return;
-    }
-  }
-
-  db.prepare(
-    `
-    DELETE FROM rarities
-    WHERE id = $id
-  `,
-  ).run({ id });
-}
-
-/** ******************************* 卡片框架 *********************************** */
-
-async function getFrames({
-  typeId,
-  rarityId,
-  current = 1,
-  pageSize = 10,
-  pagination = true,
-}: {
-  typeId?: number;
-  rarityId?: number;
-  current?: number;
-  pageSize?: number;
-  pagination?: boolean;
-}): Promise<any> {
-  const db = getInstance();
-
-  let sql = `
-    SELECT frames.*, types.name as typeName, types.label as typeLabel, rarities.name as rarityName, rarities.label as rarityLabel
-    FROM frames
-    JOIN types ON frames.typeId = types.id
-    JOIN rarities ON frames.rarityId = rarities.id
-    WHERE 1=1
-  `;
-
-  if (typeId) {
-    sql += ` AND typeId = $typeId`;
-  }
-
-  if (rarityId) {
-    sql += ` AND rarityId = $rarityId`;
-  }
-
-  if (pagination) {
-    return getPagedData({
-      current,
-      pageSize,
-      getRows: (limit, offset) => {
-        return db
-          .prepare(`${sql} LIMIT ? OFFSET ?`)
-          .all(limit, offset, { typeId, rarityId });
-      },
-      getCount: () => {
-        // @ts-ignore
-        return db
-          .prepare(`SELECT COUNT(*) FROM (${sql})`)
-          .get({ typeId, rarityId })['COUNT(*)'];
-      },
-    });
-  }
-  return db.prepare(`${sql}`).all({ typeId, rarityId });
-}
-
-function setFrame({ id, typeId, rarityId, frame }: DB.Frame): void {
-  const db = getInstance();
-  db.prepare(
-    `
-    UPDATE frames
-    SET frame = $frame
-    WHERE id = $id AND typeId = $typeId AND rarityId = $rarityId
-  `,
-  ).run({
-    id,
-    typeId,
-    rarityId,
-    frame,
-  });
-}
-
-function deleteFrame({ id }: { id?: number }) {
-  const db = getInstance();
-  db.prepare(
-    `
-    DELETE FROM frames
-    WHERE id = $id
-  `,
-  ).run({ id });
-}
-
 /** ******************************* 兵种 *********************************** */
 
 // 获取兵种分页列表
 async function getTraits({
   name,
-  label,
   current = 1,
   pageSize = 10,
   pagination = true,
-}: {
-  name?: string;
-  label?: string;
-  current?: number;
-  pageSize?: number;
-  pagination?: boolean;
-}): Promise<any> {
+}: DB.Trait & DB.Pagination): Promise<any> {
   const db = getInstance();
 
-  let sql = `
-    SELECT *
-    FROM traits
-    WHERE 1=1
-  `;
+  let sql = `SELECT * FROM traits WHERE 1=1`;
 
-  const params = { name, label };
+  const params = { name };
 
   if (name) {
-    sql += ` AND name = $name`;
-  }
-
-  if (label) {
-    sql += ` AND label LIKE $label`;
-    params.label = `%${label}%`;
+    sql += ` AND name LIKE $name`;
+    params.name = `%${name}%`;
   }
 
   if (pagination) {
@@ -680,98 +222,55 @@ async function getTraits({
   return db.prepare(`${sql}`).all(params);
 }
 
-function setTrait({ id, name, label }: DB.Trait): void {
+function setTrait({ id, name }: DB.Trait): void {
   const db = getInstance();
 
   if (id) {
-    db.prepare(
-      `
-    UPDATE traits SET name = $name, label = $label
-    WHERE id = $id
-  `,
-    ).run({
+    db.prepare(`UPDATE traits SET name = $name WHERE id = $id`).run({
       id,
       name,
-      label,
     });
   } else {
-    db.prepare(
-      `
-    INSERT INTO traits (name, label)
-    VALUES ($name, $label)
-  `,
-    ).run({
+    db.prepare(`INSERT INTO traits (name) VALUES ($name)`).run({
       name,
-      label,
     });
   }
 }
 
-function deleteTrait({ id }: { id?: number }) {
+function deleteTrait({ id }: DB.Trait) {
   const db = getInstance();
+  const isUsed = db
+    .prepare('SELECT 1 FROM cardTraits WHERE traitId = ?')
+    .get(id);
 
-  const card = db
-    .prepare(
-      `
-        SELECT * FROM cards
-        WHERE traitId = $id
-        LIMIT 1
-      `,
-    )
-    .get({ id });
-
-  if (card) {
+  if (isUsed) {
     return;
   }
 
-  db.prepare(
-    `
-    DELETE FROM traits
-    WHERE id = $id
-  `,
-  ).run({ id });
+  db.prepare(`DELETE FROM traits WHERE id = $id`).run({ id });
 }
 
 /** ******************************* 能力 *********************************** */
 
 async function getAbilities({
   name,
-  label,
   description,
   current = 1,
   pageSize = 10,
   pagination = true,
-}: {
-  name?: string;
-  label?: string;
-  description?: string;
-  current?: number;
-  pageSize?: number;
-  pagination?: boolean;
-}): Promise<any> {
+}: DB.Ability & DB.Pagination): Promise<any> {
   const db = getInstance();
 
-  let sql = `
-    SELECT *
-    FROM abilities
-    WHERE 1=1
-  `;
+  let sql = `SELECT * FROM abilities WHERE 1=1`;
 
-  const params = { name, label, description };
+  const params = { name, description };
 
   if (name) {
-    sql += ` AND name = $name`;
+    sql += ` AND name LIKE $name`;
+    params.name = `%${name}%`;
   }
 
-  if (label) {
-    sql += ` AND label LIKE $label`;
-    params.label = `%${label}%`;
-  }
-
-  if (description) {
-    sql += ` AND label LIKE $description`;
-    params.description = `%${description}%`;
-  }
+  sql += ' ORDER BY sort';
 
   if (pagination) {
     return getPagedData({
@@ -791,72 +290,76 @@ async function getAbilities({
   return db.prepare(`${sql}`).all(params);
 }
 
-function setAbility({ id, name, label, sort, description }: DB.Ability): void {
+function setAbility({ id, name, sort, description }: DB.Ability): void {
   const db = getInstance();
-  db.prepare(
-    `
-    INSERT OR REPLACE INTO abilities (id, name, label,sort, description)
-    VALUES ($id, $name, $label, $sort, $description)
-  `,
-  ).run({
-    id,
-    name,
-    label,
-    sort,
-    description,
-  });
+
+  if (id) {
+    db.prepare(
+      `UPDATE abilities SET name = $name, sort = $sort, description = $description
+    WHERE id = $id`,
+    ).run({
+      id,
+      name,
+      sort,
+      description,
+    });
+  } else {
+    // eslint-disable-next-line no-underscore-dangle
+    let _sort = sort;
+    if (!sort) {
+      // @ts-ignore
+      const { maxSort } = db
+        .prepare('SELECT MAX(sort) as maxSort FROM abilities')
+        .get();
+      _sort = maxSort ? maxSort + 1 : 1;
+    }
+    db.prepare(
+      `INSERT INTO abilities (name, sort, description)
+      VALUES ($name, $sort, $description))`,
+    ).run({
+      name,
+      sort: _sort,
+      description,
+    });
+  }
 }
 
-function deleteAbility({ id }: { id?: number }) {
+function deleteAbility({ id }: DB.Ability) {
   const db = getInstance();
-  db.prepare(
-    `
-    DELETE FROM abilities
-    WHERE id = $id
-  `,
-  ).run({ id });
+
+  const isUsed = db
+    .prepare('SELECT 1 FROM cardDetailAbilities WHERE abilityId = ?')
+    .get(id);
+
+  if (isUsed) {
+    return;
+  }
+
+  db.prepare(`DELETE FROM cardDetails WHERE id = $id`).run({ id });
 }
 
 /** ******************************* 卡包 *********************************** */
 
 async function getCardPacks({
   name,
-  label,
+  sort,
   description,
   current = 1,
   pageSize = 10,
   pagination = true,
-}: {
-  name?: string;
-  label?: string;
-  description?: string;
-  current?: number;
-  pageSize?: number;
-  pagination?: boolean;
-}): Promise<any> {
+}: DB.CardPack & DB.Pagination): Promise<any> {
   const db = getInstance();
 
-  let sql = `
-    SELECT *
-    FROM cardPacks
-    WHERE 1=1
-  `;
+  let sql = `SELECT * FROM cardPacks WHERE 1=1`;
 
-  const params = { name, label, description };
+  const params = { name, sort, description };
 
   if (name) {
-    sql += ` AND name = $name`;
+    sql += ` AND name LIKE $name`;
+    params.name = `%${name}%`;
   }
 
-  if (label) {
-    sql += ` AND label LIKE $label`;
-    params.label = `%${label}%`;
-  }
-
-  if (description) {
-    sql += ` AND label LIKE $description`;
-    params.description = `%${description}%`;
-  }
+  sql += ' ORDER BY sort';
 
   if (pagination) {
     return getPagedData({
@@ -876,69 +379,61 @@ async function getCardPacks({
   return db.prepare(`${sql}`).all(params);
 }
 
-function setCardPack({ id, name, label, sort, description }: DB.Ability): void {
+function setCardPack({ id, name, sort, description }: DB.CardPack): void {
   const db = getInstance();
 
   if (id) {
     db.prepare(
-      `
-    UPDATE cardPacks SET name = $name, label = $label, sort = $sort, description = $description
+      `UPDATE cardPacks SET name = $name, sort = $sort, description = $description
     WHERE id = $id
   `,
     ).run({
       id,
       name,
-      label,
       sort,
       description,
     });
   } else {
+    // eslint-disable-next-line no-underscore-dangle
+    let _sort = sort;
+    if (!sort) {
+      // @ts-ignore
+      const { maxSort } = db
+        .prepare('SELECT MAX(sort) as maxSort FROM abilities')
+        .get();
+      _sort = maxSort ? maxSort + 1 : 1;
+    }
     db.prepare(
-      `
-    INSERT INTO cardPacks (name, label,sort, description)
-    VALUES ($name, $label, $sort, $description)
+      `INSERT INTO cardPacks (name, sort, description)
+    VALUES ($name, $sort, $description)
   `,
     ).run({
       name,
-      label,
-      sort,
+      sort: _sort,
       description,
     });
   }
 }
 
-function deleteCardPack({ id }: { id?: number }) {
+function deleteCardPack({ id }: DB.CardPack) {
   const db = getInstance();
 
-  const card = db
-    .prepare(
-      `
-        SELECT * FROM cards
-        WHERE cardPackId = $id
-        LIMIT 1
-      `,
-    )
-    .get({ id });
+  const isUsed = db.prepare('SELECT 1 FROM cards WHERE cardPackId = ?').get(id);
 
-  if (card) {
+  if (isUsed) {
     return;
   }
 
-  db.prepare(
-    `
-    DELETE FROM cardPacks
-    WHERE id = $id
-  `,
-  ).run({ id });
+  db.prepare(`DELETE FROM cardPacks WHERE id = $id`).run({ id });
 }
 
 /** ******************************* 卡片 *********************************** */
 
 async function getCards({
-  roleId,
-  typeId,
-  traitId,
-  rarityId,
+  classes,
+  type,
+  rarity,
+  traitIds,
   cardPackId,
   cost,
   name,
@@ -949,29 +444,29 @@ async function getCards({
   current = 1,
   pageSize = 10,
   pagination = true,
-}: DB.Card & {
-  current?: number;
-  pageSize?: number;
-  pagination?: boolean;
-}): Promise<any> {
+}: DB.Card & DB.Pagination): Promise<any> {
   const db = getInstance();
 
   let sql = `
-    SELECT cards.*, roles.label as roleLabel, types.label as typeLabel, traits.label as traitLabel, rarities.label as rarityLabel, cardPacks.label as cardPackLabel
+    SELECT
+      cards.*,
+      GROUP_CONCAT(traits.name) as traits,
+      GROUP_CONCAT(abilities.name || ':' || abilities.sort) as abilities,
+      cardPacks.name as cardPackName, cardPacks.sort as cardPackSort
     FROM cards
-    JOIN roles ON cards.roleId = roles.id
-    JOIN types ON cards.typeId = types.id
-    JOIN traits ON cards.traitId = traits.id
-    JOIN rarities ON cards.rarityId = rarities.id
-    JOIN cardPacks ON cards.cardPackId = cardPacks.id
+    LEFT JOIN card_traits ON cards.id = card_traits.cardId
+    LEFT JOIN traits ON card_traits.traitId = traits.id
+    LEFT JOIN card_abilities ON cards.id = card_abilities.cardId
+    LEFT JOIN abilities ON card_abilities.abilityId = abilities.id
+    LEFT JOIN cardPacks ON cards.cardPackId = cardPacks.id
     WHERE 1=1
   `;
 
   const params = {
-    roleId,
-    typeId,
-    traitId,
-    rarityId,
+    classes,
+    type,
+    rarity,
+    traitIds,
     cardPackId,
     cost,
     name,
@@ -981,17 +476,17 @@ async function getCards({
     isReborn,
   };
 
-  if (roleId) {
-    sql += ` AND roleId = $roleId`;
+  if (classes) {
+    sql += ` AND classes = $classes`;
   }
-  if (typeId) {
-    sql += ` AND typeId = $typeId`;
+  if (type) {
+    sql += ` AND type = $type`;
   }
-  if (traitId) {
-    sql += ` AND traitId = $traitId`;
+  if (rarity) {
+    sql += ` AND rarity = $rarity`;
   }
-  if (rarityId) {
-    sql += ` AND rarityId = $rarityId`;
+  if (traitIds) {
+    sql += ` AND EXISTS (SELECT 1 FROM card_traits WHERE card_traits.cardId = cards.id AND card_traits.traitId = $traitIds)`;
   }
   if (cardPackId) {
     sql += ` AND cardPackId = $cardPackId`;
@@ -1007,7 +502,8 @@ async function getCards({
     sql += ` AND isToken = $isToken`;
   }
   if (tokenIds) {
-    sql += ` AND tokenIds = $tokenIds`;
+    sql += ` AND ',' || tokenIds || ',' LIKE $tokenIds`;
+    params.tokenIds = `%,${tokenIds},%`;
   }
   if (parentId) {
     sql += ` AND parentId = $parentId`;
@@ -1015,6 +511,8 @@ async function getCards({
   if (isReborn) {
     sql += ` AND isReborn = $isReborn`;
   }
+
+  sql += ' GROUP BY cards.id';
 
   if (pagination) {
     return getPagedData({
@@ -1275,18 +773,6 @@ const dataInterface: ServerInterface = {
   close,
   removeDB,
   initialize,
-  getRoles,
-  setRole,
-  deleteRole,
-  getTypes,
-  setType,
-  deleteType,
-  getRarities,
-  setRarity,
-  deleteRarity,
-  getFrames,
-  setFrame,
-  deleteFrame,
   getTraits,
   setTrait,
   deleteTrait,

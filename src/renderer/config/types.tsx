@@ -34,6 +34,19 @@ export interface FramesMap {
   [key: string]: Frames;
 }
 
+export const TypesEnum: { [key: string]: string } = {
+  follower: '从者',
+  spell: '法术',
+  amulet: '护符',
+};
+
+export const RaritiesEnum: { [key: string]: string } = {
+  bronze: '青铜',
+  silver: '白银',
+  gold: '黄金',
+  legendary: '传说',
+};
+
 const typesList = ['follower', 'spell', 'amulet'];
 const raritiesList = ['bronze', 'silver', 'gold', 'legendary'];
 const framesList = [

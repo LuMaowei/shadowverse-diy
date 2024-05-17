@@ -1,101 +1,74 @@
 declare global {
   namespace DB {
-    interface Role {
-      id?: number;
-      name?: string;
-      label?: string;
-      avatar?: string;
-      gem?: string;
-      emblem?: string;
-      background?: string;
+    interface Pagination {
+      current?: number;
+      pageSize?: number;
+      pagination?: boolean;
     }
 
-    interface Type {
-      id?: number;
-      name?: string;
-      label?: string;
-    }
-
-    interface Rarity {
-      id?: number;
-      name?: string;
-      label?: string;
-    }
-
-    interface Frame {
-      id?: number;
-      typeId?: number;
-      rarityId?: number;
-      frame?: string;
-    }
-
+    // 兵种
     interface Trait {
       id?: number;
       name?: string;
-      label?: string;
     }
 
+    // 能力关键字
     interface Ability {
       id?: number;
       name?: string;
-      label?: string;
       sort?: number;
       description?: string;
     }
 
+    // 卡包
     interface CardPack {
       id?: number;
       name?: string;
-      label?: string;
       sort?: number;
       description?: string;
     }
 
+    // 卡片
     interface Card {
       id?: number;
-      roleId?: number;
-      typeId?: number;
-      traitId?: number;
-      rarityId?: number;
+      classes?: string;
+      type?: string;
+      rarity?: string;
+      traitIds?: number;
       cardPackId?: number;
       cost?: number;
       name?: string;
       isToken?: number;
-      tokenIds?: number[];
+      tokenIds?: string;
       parentId?: number;
       isReborn?: number;
       image?: string;
     }
 
+    // 卡片描述
     interface CardDetails {
       id?: number;
       cardId?: number;
-      evolutionStage?: number;
+      evolvedStage?: number;
       attack?: number;
       health?: number;
+      abilityIds?: string;
       description?: string;
     }
 
+    // 单卡信息
     interface CardSingle extends DB.Card {
-      roleName?: string;
-      roleLabel?: string;
-      roleAvatar?: string;
-      roleGem?: string;
-      roleEmblem?: string;
-      roleBackground?: string;
-      typeName?: string;
-      typeLabel?: string;
+      traitKey?: string;
       traitName?: string;
-      traitLabel?: string;
-      rarityName?: string;
-      rarityLabel?: string;
+      cardPackKey?: string;
       cardPackName?: string;
-      cardPackLabel?: string;
       cardPackSort?: number;
       cardPackDescription?: string;
       evolutionStages?: string;
       attacks?: string;
       healths?: string;
+      abilityKeys?: string;
+      abilityNames?: string;
       cardDetailsDescriptions?: string;
     }
   }

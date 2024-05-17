@@ -17,65 +17,19 @@ function updateToSchemaVersion1(
   logger.info('updateToSchemaVersion1: starting...');
 
   db.transaction(() => {
-    // 职业表
-    db.exec(`
-      CREATE TABLE roles (
-        id INTEGER PRIMARY KEY,
-        name STRING NOT NULL,
-        label STRING NOT NULL,
-        avatar STRING,
-        gem STRING,
-        emblem STRING,
-        background STRING
-      );
-    `);
-
-    // 卡片种类表
-    db.exec(`
-      CREATE TABLE types (
-        id INTEGER PRIMARY KEY,
-        name STRING NOT NULL,
-        label STRING NOT NULL
-      );
-   `);
-
-    // 卡片稀有度表
-    db.exec(`
-      CREATE TABLE rarities (
-        id INTEGER PRIMARY KEY,
-        name STRING NOT NULL,
-        label STRING NOT NULL
-      );
-    `);
-
-    // 卡片框架表
-    db.exec(`
-      CREATE TABLE frames (
-        id INTEGER PRIMARY KEY,
-        typeId INTEGER,
-        rarityId INTEGER,
-        frame STRING,
-        FOREIGN KEY (typeId) REFERENCES types(id),
-        FOREIGN KEY (rarityId) REFERENCES rarities(id),
-        UNIQUE (typeId, rarityId)
-      );
-    `);
-
-    // 兵种表
+    // 兵种
     db.exec(`
       CREATE TABLE traits (
         id INTEGER PRIMARY KEY,
-        name STRING NOT NULL,
-        label STRING NOT NULL
+        name STRING NOT NULL
       );
     `);
 
-    // 卡片能力关键字表
+    // 能力关键字
     db.exec(`
       CREATE TABLE abilities (
         id INTEGER PRIMARY KEY,
         name STRING NOT NULL,
-        label STRING NOT NULL,
         sort INTEGER NOT NULL,
         description STRING
       );
@@ -86,36 +40,42 @@ function updateToSchemaVersion1(
       CREATE TABLE cardPacks (
         id INTEGER PRIMARY KEY,
         name STRING NOT NULL,
-        label STRING NOT NULL,
         sort INTEGER NOT NULL,
         description STRING
       );
     `);
 
-    // 卡片表
+    // 卡片
     db.exec(`
       CREATE TABLE cards (
         id INTEGER PRIMARY KEY,
-        roleId INTEGER,
-        typeId INTEGER,
-        traitId INTEGER,
-        rarityId INTEGER,
-        cardPackId INTEGER,
+        classes STRING,
+        type STRING,
+        rarity STRING,
         cost INTEGER,
         name STRING,
-        isToken INTEGER,
-        tokenIds STRING,
-        parentId INTEGER,
         isReborn INTEGER,
         image STRING,
-        FOREIGN KEY (roleId) REFERENCES roles(id),
-        FOREIGN KEY (typeId) REFERENCES types(id),
+        isToken INTEGER,
+        cardPackId STRING,
+        tokenIds STRING,
+        parentIds INTEGER,
         FOREIGN KEY (traitId) REFERENCES traits(id),
-        FOREIGN KEY (rarityId) REFERENCES rarities(id),
         FOREIGN KEY (cardPackId) REFERENCES cardPacks(id)
       );
 
       CREATE INDEX cardId ON cards (id);
+    `);
+
+    // 卡片与兵种的关联关系表
+    db.exec(`
+      CREATE TABLE cardTraits (
+        cardId INTEGER,
+        traitId INTEGER,
+        PRIMARY KEY (cardId, traitId),
+        FOREIGN KEY (cardId) REFERENCES cards(id),
+        FOREIGN KEY (traitId) REFERENCES traits(id)
+      );
     `);
 
     // 卡片详情表
@@ -123,7 +83,7 @@ function updateToSchemaVersion1(
       CREATE TABLE cardDetails (
         id INTEGER PRIMARY KEY,
         cardId INTEGER,
-        evolutionStage INTEGER,
+        evolvedStage INTEGER,
         attack INTEGER,
         health INTEGER,
         description STRING,
@@ -131,6 +91,17 @@ function updateToSchemaVersion1(
       );
 
       CREATE INDEX cardDetailsId ON cardDetails (id);
+    `);
+
+    // 卡片详情与能力关键字的关联关系表
+    db.exec(`
+      CREATE TABLE cardDetailAbilities (
+        cardDetailId INTEGER,
+        abilityId INTEGER,
+        PRIMARY KEY (cardDetailId, abilityId),
+        FOREIGN KEY (cardDetailId) REFERENCES cardDetails(id),
+        FOREIGN KEY (abilityId) REFERENCES abilities(id)
+      );
     `);
 
     db.pragma('user_version = 1');

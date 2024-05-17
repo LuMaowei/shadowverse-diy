@@ -1,9 +1,11 @@
 import { JSX, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Form } from 'antd';
+import { Form, InputNumber, Input } from 'antd';
 import CardFrame from '../../components/cardEdit/CardFrame';
 import CardDescription from '../../components/cardEdit/CardDescription';
 import CardHead from '../../components/cardEdit/CardHead';
+import classesMap from '../../config/classes';
+import framesMap, { FramesMap } from '../../config/types';
 
 function getFixedImagePath(imagePath: string): string {
   return imagePath.replace(/\\/g, '\\\\');
@@ -16,9 +18,18 @@ export default function CardEdit(): JSX.Element {
   const [roleEmblem, setRoleEmblem] = useState<string>('');
   const [cardFrame, setCardFrame] = useState<string>('');
   const [form] = Form.useForm();
+  const roleName = Form.useWatch('name', form);
   const roleId = Form.useWatch('roleId', form);
   const rarityId = Form.useWatch('rarityId', form);
   const typeId = Form.useWatch('typeId', form);
+
+  const classes = Form.useWatch('classes', form);
+  const type = Form.useWatch('type', form);
+  const rarity = Form.useWatch('rarity', form);
+
+  const { frame } = framesMap[`${type}_${rarity}`] || {};
+  const { key, name, avatar, gem, emblem, background } =
+    classesMap[classes] || {};
 
   const fetchFrameInfo = (params: { rarityId?: number; typeId?: number }) => {
     window.Context.sqlClient
@@ -32,6 +43,7 @@ export default function CardEdit(): JSX.Element {
     window.Context.sqlClient
       .getRoles({ ...params, pagination: false })
       .then((res) => {
+        console.log(res);
         setRoleGem(getFixedImagePath(res[0].gem));
         setRoleBackground(getFixedImagePath(res[0].background));
         setRoleEmblem(getFixedImagePath(res[0].emblem));
@@ -109,15 +121,21 @@ export default function CardEdit(): JSX.Element {
     <div
       className="card-container"
       style={{
-        backgroundImage: `url("file://${roleBackground}")`,
+        backgroundImage: `url(${background})`,
       }}
     >
       <div className="card-container-mask" />
       <Form className="card-form" form={form}>
-        <CardHead roleEmblem={roleEmblem} />
+        <Form.Item hidden name="typeId">
+          <InputNumber />
+        </Form.Item>
+        <Form.Item hidden name="name">
+          <Input />
+        </Form.Item>
+        <CardHead emblem={emblem} />
         <div className="card-main-border" />
         <div className="card-content">
-          <CardFrame cardFrame={cardFrame} roleGem={roleGem} />
+          <CardFrame frame={frame} gem={gem} />
           <CardDescription />
         </div>
       </Form>
