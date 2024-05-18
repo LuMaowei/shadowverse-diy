@@ -1,27 +1,84 @@
-import { Input } from 'antd';
-import { useState } from 'react';
+import { Editor } from '@wangeditor/editor-for-react';
+import { IDomEditor } from '@wangeditor/editor';
+import React, { useEffect, useRef } from 'react';
+import AbilityInput, { AbilityInputRef } from './AbilityInput';
+import { jsonStringify } from '../../utils';
 
-export default function CardDetailsTextArea(props: {
+interface CardDetailsTextAreaProps {
   value?: string;
-  onChange?: (value: string) => void;
-}) {
-  const { value, onChange } = props;
-  const [disabled, setDisabled] = useState(false);
+  onChange?: (value: string | null | undefined) => void;
+  height?: number;
+}
 
-  if (disabled) {
-    return <div onClick={() => setDisabled(false)}>{value}</div>;
-  }
+function CardDetailsTextArea(props: CardDetailsTextAreaProps) {
+  const { value, onChange, height } = props;
+  const editorRef = useRef<IDomEditor | null>(null);
+  const abilityInputRef = useRef<AbilityInputRef>(null);
+
+  useEffect(() => {
+    return () => {
+      editorRef.current?.destroy();
+    };
+  }, []);
+
+  const showAbilityInput = () => {
+    abilityInputRef.current?.open();
+  };
+
+  const hideAbilityInput = () => {
+    abilityInputRef.current?.close();
+  };
+
+  const editorConfig = {
+    EXTEND_CONF: {
+      abilityConfig: {
+        showModal: showAbilityInput,
+        hideModal: hideAbilityInput,
+      },
+    },
+  };
+
+  const handleChange = (editor: IDomEditor) => {
+    onChange?.(editor.getHtml());
+  };
+
+  const handleCreate = (editor: IDomEditor) => {
+    editorRef.current = editor;
+  };
+
+  const onAbilitySelect = (selectedAbility: {
+    label: string;
+    value: string | number;
+  }) => {
+    hideAbilityInput();
+    const abilityElem = {
+      type: 'ability',
+      info: jsonStringify(selectedAbility),
+      children: [{ text: '' }],
+    };
+    editorRef.current?.restoreSelection();
+    editorRef.current?.deleteBackward('character');
+    editorRef.current?.insertNode(abilityElem);
+    editorRef.current?.move(1);
+  };
 
   return (
-    <Input.TextArea
-      className="card-details-description-textarea"
-      autoFocus
-      value={value}
-      onChange={(e) => onChange?.(e.target.value)}
-      // onPressEnter={() => {
-      //   setDisabled(true);
-      // }}
-      // onBlur={() => setDisabled(true)}
-    />
+    <>
+      <Editor
+        onCreated={handleCreate}
+        onChange={handleChange}
+        defaultConfig={editorConfig}
+        value={value}
+        mode="default"
+        style={{ height }}
+      />
+      <AbilityInput
+        ref={abilityInputRef}
+        editor={editorRef.current}
+        onSelect={onAbilitySelect}
+      />
+    </>
   );
 }
+
+export default CardDetailsTextArea;

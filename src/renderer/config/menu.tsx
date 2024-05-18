@@ -14,26 +14,6 @@ const menu: Route = [
     routes: [
       {
         index: true,
-        path: 'role',
-        name: '职业',
-        icon: <CrownFilled />,
-      },
-      {
-        path: 'type',
-        name: '卡片类型',
-        icon: <CrownFilled />,
-      },
-      {
-        path: 'rarity',
-        name: '稀有度',
-        icon: <CrownFilled />,
-      },
-      {
-        path: 'frame',
-        name: '卡片框架',
-        icon: <CrownFilled />,
-      },
-      {
         path: 'trait',
         name: '兵种',
         icon: <CrownFilled />,

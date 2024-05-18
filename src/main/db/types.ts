@@ -3,88 +3,26 @@ import type { LogFunctions } from 'electron-log';
 export type DataInterface = {
   close: () => Promise<void>;
   removeDB: () => Promise<void>;
-  getRoles: (
-    params: DB.Role & {
-      pageSize?: number;
-      current?: number;
-      pagination?: boolean;
+  getTraits: (params: DB.Traits) => Promise<any>;
+  setTrait: (params: DB.Traits) => void;
+  deleteTrait: (params: DB.Traits) => void;
+  getAbilities: (params: DB.Abilities) => Promise<any>;
+  setAbility: (params: DB.Abilities) => void;
+  deleteAbility: (params: DB.Abilities) => void;
+  getCardPacks: (params: DB.CardPacks) => Promise<any>;
+  setCardPack: (params: DB.CardPacks) => void;
+  deleteCardPack: (params: DB.CardPacks) => void;
+  getCards: (params: DB.Cards & { traitIds?: number[] }) => Promise<any>;
+  setCard: (
+    params: DB.Cards & {
+      tokenIds?: number[];
+      parentIds?: number[];
+      cardDetails?: (DB.CardDetails & { abilityIds?: number[] })[];
+      traitIds?: number[];
     },
-  ) => Promise<any>;
-  setRole: (params: DB.Role) => void;
-  deleteRole: (params: DB.Role) => void;
-  getTypes: (
-    params: DB.Type & {
-      pageSize?: number;
-      current?: number;
-      pagination?: boolean;
-    },
-  ) => Promise<any>;
-  setType: (params: DB.Type) => void;
-  deleteType: (params: DB.Type) => void;
-  getRarities: (
-    params: DB.Rarity & {
-      pageSize?: number;
-      current?: number;
-      pagination?: boolean;
-    },
-  ) => Promise<any>;
-  setRarity: (params: DB.Rarity) => void;
-  deleteRarity: (params: DB.Rarity) => void;
-  getFrames: (
-    params: DB.Frame & {
-      pageSize?: number;
-      current?: number;
-      pagination?: boolean;
-    },
-  ) => Promise<any>;
-  setFrame: (params: DB.Frame) => void;
-  deleteFrame: (params: DB.Frame) => void;
-  getTraits: (
-    params: DB.Trait & {
-      pageSize?: number;
-      current?: number;
-      pagination?: boolean;
-    },
-  ) => Promise<any>;
-  setTrait: (params: DB.Trait) => void;
-  deleteTrait: (params: DB.Trait) => void;
-  getAbilities: (
-    params: DB.Ability & {
-      pageSize?: number;
-      current?: number;
-      pagination?: boolean;
-    },
-  ) => Promise<any>;
-  setAbility: (params: DB.Ability) => void;
-  deleteAbility: (params: DB.Ability) => void;
-  getCardPacks: (
-    params: DB.CardPack & {
-      pageSize?: number;
-      current?: number;
-      pagination?: boolean;
-    },
-  ) => Promise<any>;
-  setCardPack: (params: DB.CardPack) => void;
-  deleteCardPack: (params: DB.CardPack) => void;
-  getCards: (
-    params: DB.Card & {
-      pageSize?: number;
-      current?: number;
-      pagination?: boolean;
-    },
-  ) => Promise<any>;
-  setCard: (params: DB.Card) => void;
-  deleteCard: (params: DB.Card) => void;
-  getCardDetails: (
-    params: DB.CardDetails & {
-      pageSize?: number;
-      current?: number;
-      pagination?: boolean;
-    },
-  ) => Promise<any>;
-  setCardDetails: (params: DB.CardDetails) => void;
-  deleteCardDetails: (params: DB.CardDetails) => void;
-  getCard: (params: DB.Card) => Promise<any>;
+  ) => void;
+  deleteCard: (params: DB.Cards) => void;
+  getCard: (params: DB.Cards) => Promise<any>;
 };
 
 export type ClientInterface = DataInterface & {

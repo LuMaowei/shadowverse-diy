@@ -52,15 +52,14 @@ function updateToSchemaVersion1(
         classes STRING,
         type STRING,
         rarity STRING,
+        cardPackId STRING,
         cost INTEGER,
         name STRING,
         isReborn INTEGER,
-        image STRING,
         isToken INTEGER,
-        cardPackId STRING,
+        image TEXT,
         tokenIds STRING,
         parentIds INTEGER,
-        FOREIGN KEY (traitId) REFERENCES traits(id),
         FOREIGN KEY (cardPackId) REFERENCES cardPacks(id)
       );
 

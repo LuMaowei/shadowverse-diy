@@ -113,6 +113,24 @@ header {
     display: flex;
   }
 
+  .card-frame-select {
+    position: absolute;
+    min-width: 96px;
+    z-index: 2;
+
+    .ant-select-selector {
+      padding: 0;
+    }
+
+    .ant-select-arrow {
+      display: none;
+    }
+
+    .ant-select-selection-item {
+      display: none;
+    }
+  }
+
   .card-frame-name {
     flex: 1;
     display: flex;
@@ -129,6 +147,7 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
   }
 
   .crad-details-follower-unevolved {
@@ -136,9 +155,11 @@ header {
     background-image: url("../../assets/resources/cardContent/underLine.png");
     margin: 68px 48px 0 48px;
     font-size: 16px;
+    position: relative;
   }
 
   .crad-details-follower-evolved {
+    position: relative;
     margin: 50px 48px 0 48px;
   }
 
@@ -153,14 +174,30 @@ header {
       padding: 0;
     }
 
-    .ant-select-arrow {
+    .ant-select-arrow, .ant-select-selection-overflow-item-suffix, .ant-select-selection-item-remove {
       display: none;
+    }
+
+    .ant-select-selection-item-content {
+      margin-inline-end: 0;
     }
 
     .ant-select-selection-item {
       color: #fff;
       font-family: 'HuakangWeibei', serif;
       font-size: 24px;
+      padding-inline-start: 0;
+      margin-inline-end: 0;
+      padding-inline-end: 0;
+    }
+
+    .ant-select-selection-overflow > *:nth-child(2)::before {
+      content: "·";
+      display: inline-block;
+      color: #fff;
+      font-size: 24px;
+      font-family: 'HuakangWeibei', serif;
+      margin: 0 -4px
     }
   }
 }
@@ -174,12 +211,21 @@ header {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-
-.card {
-  font-family: 'HuakangWeibei', serif;
-}
-
 .card-ability {
   color: #bd9e65;
   font-weight: bold;
+}
+
+.w-e-text-container {
+  background-color: unset !important;
+  color: unset !important;
+}
+
+.w-e-text-container [data-slate-editor] {
+  padding: 0 !important;
+}
+
+.w-e-text-container [data-slate-editor] p {
+  margin: 0 !important;
+  line-height: 27px !important;
 }

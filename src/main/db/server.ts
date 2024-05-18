@@ -161,68 +161,26 @@ function getInstance(): Database {
   return globalInstance;
 }
 
-// 获取符合antd-pro-table分页化数据结构的数据
-async function getPagedData({
-  current,
-  pageSize,
-  getRows,
-  getCount,
-}: {
-  current: number;
-  pageSize: number;
-  getRows: (limit: number, offset: number) => any[];
-  getCount: () => number;
-}) {
-  const offset = (current - 1) * pageSize;
-  const data = getRows(pageSize, offset);
-  const total = getCount();
-
-  return {
-    success: true,
-    total,
-    data,
-  };
-}
-
 /** ******************************* 兵种 *********************************** */
 
-// 获取兵种分页列表
-async function getTraits({
-  name,
-  current = 1,
-  pageSize = 10,
-  pagination = true,
-}: DB.Trait & DB.Pagination): Promise<any> {
+// 获取兵种列表
+async function getTraits({ name }: DB.Traits): Promise<any> {
   const db = getInstance();
 
-  let sql = `SELECT * FROM traits WHERE 1=1`;
+  let sql = `SELECT * FROM traits`;
 
   const params = { name };
 
   if (name) {
-    sql += ` AND name LIKE $name`;
+    sql += ` WHERE name LIKE $name`;
     params.name = `%${name}%`;
   }
 
-  if (pagination) {
-    return getPagedData({
-      current,
-      pageSize,
-      getRows: (limit, offset) => {
-        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
-      },
-      getCount: () => {
-        // @ts-ignore
-        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
-          'COUNT(*)'
-        ];
-      },
-    });
-  }
   return db.prepare(`${sql}`).all(params);
 }
 
-function setTrait({ id, name }: DB.Trait): void {
+// 新增或更新兵种
+function setTrait({ id, name }: DB.Traits): void {
   const db = getInstance();
 
   if (id) {
@@ -237,11 +195,17 @@ function setTrait({ id, name }: DB.Trait): void {
   }
 }
 
-function deleteTrait({ id }: DB.Trait) {
+/**
+ * 删除兵种
+ * 若已有卡片使用此兵种，则无法删除
+ * @param id
+ */
+function deleteTrait({ id }: DB.Traits) {
   const db = getInstance();
+
   const isUsed = db
-    .prepare('SELECT 1 FROM cardTraits WHERE traitId = ?')
-    .get(id);
+    .prepare('SELECT 1 FROM cardTraits WHERE traitId = $id')
+    .get({ id });
 
   if (isUsed) {
     return;
@@ -252,51 +216,31 @@ function deleteTrait({ id }: DB.Trait) {
 
 /** ******************************* 能力 *********************************** */
 
-async function getAbilities({
-  name,
-  description,
-  current = 1,
-  pageSize = 10,
-  pagination = true,
-}: DB.Ability & DB.Pagination): Promise<any> {
+// 获取能力关键字列表
+async function getAbilities({ name }: DB.Abilities): Promise<any> {
   const db = getInstance();
 
-  let sql = `SELECT * FROM abilities WHERE 1=1`;
+  let sql = `SELECT * FROM abilities`;
 
-  const params = { name, description };
+  const params = { name };
 
   if (name) {
-    sql += ` AND name LIKE $name`;
+    sql += ` WHERE name LIKE $name`;
     params.name = `%${name}%`;
   }
 
   sql += ' ORDER BY sort';
 
-  if (pagination) {
-    return getPagedData({
-      current,
-      pageSize,
-      getRows: (limit, offset) => {
-        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
-      },
-      getCount: () => {
-        // @ts-ignore
-        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
-          'COUNT(*)'
-        ];
-      },
-    });
-  }
   return db.prepare(`${sql}`).all(params);
 }
 
-function setAbility({ id, name, sort, description }: DB.Ability): void {
+// 新增或更新能力关键字
+function setAbility({ id, name, sort, description }: DB.Abilities): void {
   const db = getInstance();
 
   if (id) {
     db.prepare(
-      `UPDATE abilities SET name = $name, sort = $sort, description = $description
-    WHERE id = $id`,
+      `UPDATE abilities SET name = $name, sort = $sort, description = $description WHERE id = $id`,
     ).run({
       id,
       name,
@@ -314,8 +258,7 @@ function setAbility({ id, name, sort, description }: DB.Ability): void {
       _sort = maxSort ? maxSort + 1 : 1;
     }
     db.prepare(
-      `INSERT INTO abilities (name, sort, description)
-      VALUES ($name, $sort, $description))`,
+      `INSERT INTO abilities (name, sort, description) VALUES ($name, $sort, $description)`,
     ).run({
       name,
       sort: _sort,
@@ -324,69 +267,52 @@ function setAbility({ id, name, sort, description }: DB.Ability): void {
   }
 }
 
-function deleteAbility({ id }: DB.Ability) {
+/**
+ * 删除能力关键字
+ * 若以有卡片详情使用此能力关键字，则无法删除
+ * @param id
+ */
+function deleteAbility({ id }: DB.Abilities) {
   const db = getInstance();
 
   const isUsed = db
-    .prepare('SELECT 1 FROM cardDetailAbilities WHERE abilityId = ?')
-    .get(id);
+    .prepare('SELECT 1 FROM cardDetailAbilities WHERE abilityId = $id')
+    .get({ id });
 
   if (isUsed) {
     return;
   }
 
-  db.prepare(`DELETE FROM cardDetails WHERE id = $id`).run({ id });
+  db.prepare(`DELETE FROM abilities WHERE id = $id`).run({ id });
 }
 
 /** ******************************* 卡包 *********************************** */
 
-async function getCardPacks({
-  name,
-  sort,
-  description,
-  current = 1,
-  pageSize = 10,
-  pagination = true,
-}: DB.CardPack & DB.Pagination): Promise<any> {
+// 获取卡包列表
+async function getCardPacks({ name }: DB.CardPacks): Promise<any> {
   const db = getInstance();
 
-  let sql = `SELECT * FROM cardPacks WHERE 1=1`;
+  let sql = `SELECT * FROM cardPacks`;
 
-  const params = { name, sort, description };
+  const params = { name };
 
   if (name) {
-    sql += ` AND name LIKE $name`;
+    sql += ` WHERE name LIKE $name`;
     params.name = `%${name}%`;
   }
 
   sql += ' ORDER BY sort';
 
-  if (pagination) {
-    return getPagedData({
-      current,
-      pageSize,
-      getRows: (limit, offset) => {
-        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
-      },
-      getCount: () => {
-        // @ts-ignore
-        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
-          'COUNT(*)'
-        ];
-      },
-    });
-  }
   return db.prepare(`${sql}`).all(params);
 }
 
-function setCardPack({ id, name, sort, description }: DB.CardPack): void {
+// 新增或更新卡包
+function setCardPack({ id, name, sort, description }: DB.CardPacks): void {
   const db = getInstance();
 
   if (id) {
     db.prepare(
-      `UPDATE cardPacks SET name = $name, sort = $sort, description = $description
-    WHERE id = $id
-  `,
+      `UPDATE cardPacks SET name = $name, sort = $sort, description = $description WHERE id = $id`,
     ).run({
       id,
       name,
@@ -399,14 +325,13 @@ function setCardPack({ id, name, sort, description }: DB.CardPack): void {
     if (!sort) {
       // @ts-ignore
       const { maxSort } = db
-        .prepare('SELECT MAX(sort) as maxSort FROM abilities')
+        .prepare('SELECT MAX(sort) as maxSort FROM cardPacks')
         .get();
       _sort = maxSort ? maxSort + 1 : 1;
     }
     db.prepare(
       `INSERT INTO cardPacks (name, sort, description)
-    VALUES ($name, $sort, $description)
-  `,
+    VALUES ($name, $sort, $description)`,
     ).run({
       name,
       sort: _sort,
@@ -415,7 +340,12 @@ function setCardPack({ id, name, sort, description }: DB.CardPack): void {
   }
 }
 
-function deleteCardPack({ id }: DB.CardPack) {
+/**
+ * 删除卡包
+ * 若已有卡片使用此卡包，则无法删除
+ * @param id
+ */
+function deleteCardPack({ id }: DB.CardPacks) {
   const db = getInstance();
 
   const isUsed = db.prepare('SELECT 1 FROM cards WHERE cardPackId = ?').get(id);
@@ -429,344 +359,265 @@ function deleteCardPack({ id }: DB.CardPack) {
 
 /** ******************************* 卡片 *********************************** */
 
+// 获取卡片列表
 async function getCards({
   classes,
   type,
   rarity,
-  traitIds,
   cardPackId,
   cost,
-  name,
-  isToken,
-  tokenIds,
-  parentId,
   isReborn,
-  current = 1,
-  pageSize = 10,
-  pagination = true,
-}: DB.Card & DB.Pagination): Promise<any> {
+  isToken,
+  name,
+  traitIds,
+}: DB.Cards & { traitIds?: number[] }): Promise<any> {
   const db = getInstance();
 
-  let sql = `
-    SELECT
-      cards.*,
-      GROUP_CONCAT(traits.name) as traits,
-      GROUP_CONCAT(abilities.name || ':' || abilities.sort) as abilities,
-      cardPacks.name as cardPackName, cardPacks.sort as cardPackSort
-    FROM cards
-    LEFT JOIN card_traits ON cards.id = card_traits.cardId
-    LEFT JOIN traits ON card_traits.traitId = traits.id
-    LEFT JOIN card_abilities ON cards.id = card_abilities.cardId
-    LEFT JOIN abilities ON card_abilities.abilityId = abilities.id
-    LEFT JOIN cardPacks ON cards.cardPackId = cardPacks.id
-    WHERE 1=1
-  `;
+  let sql = `SELECT cards.*, cardPacks.name as cardPackName, GROUP_CONCAT(traits.name) as traitNameList FROM cards
+LEFT JOIN cardTraits ON cards.id = cardTraits.cardId
+LEFT JOIN cardPacks on cards.cardPackId = cardPacks.id
+LEFT JOIN traits ON cardTraits.traitId = traits.id`;
 
   const params = {
     classes,
     type,
     rarity,
-    traitIds,
     cardPackId,
     cost,
-    name,
-    isToken,
-    tokenIds,
-    parentId,
     isReborn,
+    isToken,
+    name,
+    traitIds,
   };
 
+  const conditions = [];
   if (classes) {
-    sql += ` AND classes = $classes`;
+    conditions.push('classes = $classes');
   }
   if (type) {
-    sql += ` AND type = $type`;
+    conditions.push('type = $type');
   }
   if (rarity) {
-    sql += ` AND rarity = $rarity`;
-  }
-  if (traitIds) {
-    sql += ` AND EXISTS (SELECT 1 FROM card_traits WHERE card_traits.cardId = cards.id AND card_traits.traitId = $traitIds)`;
+    conditions.push('rarity = $rarity');
   }
   if (cardPackId) {
-    sql += ` AND cardPackId = $cardPackId`;
+    conditions.push('cardPackId = $cardPackId');
   }
   if (cost) {
-    sql += ` AND cost = $cost`;
-  }
-  if (name) {
-    sql += ` AND name LIKE $name`;
-    params.name = `%${name}%`;
-  }
-  if (isToken) {
-    sql += ` AND isToken = $isToken`;
-  }
-  if (tokenIds) {
-    sql += ` AND ',' || tokenIds || ',' LIKE $tokenIds`;
-    params.tokenIds = `%,${tokenIds},%`;
-  }
-  if (parentId) {
-    sql += ` AND parentId = $parentId`;
+    conditions.push('cost = $cost');
   }
   if (isReborn) {
-    sql += ` AND isReborn = $isReborn`;
+    conditions.push('isReborn = $isReborn');
+  }
+  if (isToken) {
+    conditions.push('isToken = $isToken');
+  }
+  if (name) {
+    conditions.push('name LIKE $name');
+    params.name = `%${name}%`;
+  }
+  if (traitIds && traitIds.length > 0) {
+    conditions.push(`cards.id IN (${traitIds.join(',')})`);
+  }
+
+  if (conditions.length > 0) {
+    sql += ` WHERE ${conditions.join(' AND ')}`;
   }
 
   sql += ' GROUP BY cards.id';
 
-  if (pagination) {
-    return getPagedData({
-      current,
-      pageSize,
-      getRows: (limit, offset) => {
-        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
-      },
-      getCount: () => {
-        // @ts-ignore
-        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
-          'COUNT(*)'
-        ];
-      },
-    });
-  }
   return db.prepare(`${sql}`).all(params);
 }
 
+// 新增或更新卡片
 function setCard({
   id,
-  roleId,
-  typeId,
-  traitId,
-  rarityId,
+  classes,
+  type,
+  rarity,
   cardPackId,
   cost,
   name,
-  isToken,
-  tokenIds,
-  parentId,
   isReborn,
+  isToken,
   image,
-}: DB.Card): void {
+  tokenIds,
+  parentIds,
+  cardDetails,
+  traitIds,
+}: DB.Cards & {
+  tokenIds?: number[];
+  parentIds?: number[];
+  cardDetails?: (DB.CardDetails & { abilityIds?: number[] })[];
+  traitIds?: number[];
+}): void {
   const db = getInstance();
 
-  if (id) {
-    db.prepare(
-      `
-    UPDATE cards SET roleId = $roleId, typeId = $typeId, traitId = $traitId, rarityId = $rarityId, cardPackId = $cardPackId, cost = $cost, name = $name, isToken = $isToken, tokenIds = $tokenIds, parentId = $parentId, isReborn = $isReborn, image = $image
-    WHERE id = $id
-  `,
-    ).run({
-      id,
-      roleId,
-      typeId,
-      traitId,
-      rarityId,
-      cardPackId,
-      cost,
-      name,
-      isToken,
-      tokenIds,
-      parentId,
-      isReborn,
-      image,
-    });
-  } else {
-    db.prepare(
-      `
-    INSERT INTO cards (roleId, typeId, traitId, rarityId, cardPackId, cost, name, isToken, tokenIds, parentId, isReborn, image)
-    VALUES ($roleId, $typeId, $traitId, $rarityId, $cardPackId, $cost, $name, $isToken, $tokenIds, $parentId, $isReborn, $image)
-  `,
-    ).run({
-      roleId,
-      typeId,
-      traitId,
-      rarityId,
-      cardPackId,
-      cost,
-      name,
-      isToken,
-      tokenIds,
-      parentId,
-      isReborn,
-      image,
-    });
-  }
+  db.transaction(() => {
+    if (id) {
+      db.prepare(
+        `UPDATE cards SET classes = $classes, type = $type, rarity = $rarity, cardPackId = $cardPackId, cost = $cost, name = $name,
+        isReborn = $isReborn, isToken = $isToken, image = $image, tokenIds = $tokenIds, parentIds = $parentIds WHERE id = $id`,
+      ).run({
+        id,
+        classes,
+        type,
+        rarity,
+        cardPackId,
+        cost,
+        name,
+        isReborn,
+        isToken,
+        image,
+        tokenIds: tokenIds?.join(','),
+        parentIds: parentIds?.join(','),
+      });
+
+      // 更新卡片详情
+      cardDetails?.forEach((detail) => {
+        db.prepare(
+          `UPDATE cardDetails SET cardId = $cardId, evolvedStage = $evolvedStage, attack = $attack, health = $health,
+description = $description WHERE id = $id`,
+        ).run({
+          ...detail,
+          id: detail.id,
+          cardId: id,
+        });
+
+        // 更新卡片详情与能力关键字的关联关系
+        db.prepare(
+          `DELETE FROM cardDetailAbilities WHERE cardDetailId = $id`,
+        ).run({ id: detail.id });
+        detail.abilityIds?.forEach((abilityId) => {
+          db.prepare(
+            `INSERT INTO cardDetailAbilities (cardDetailId, abilityId) VALUES ($cardDetailId, $abilityId)`,
+          ).run({
+            cardDetailId: detail.id,
+            abilityId,
+          });
+        });
+      });
+
+      // 更新卡片与兵种的关联关系
+      db.prepare(`DELETE FROM cardTraits WHERE cardId = $cardId`).run({
+        cardId: id,
+      });
+
+      traitIds?.forEach((traitId) => {
+        db.prepare(
+          `INSERT INTO cardTraits (cardId, traitId) VALUES ($cardId, $traitId)`,
+        ).run({
+          cardId: id,
+          traitId,
+        });
+      });
+    } else {
+      const { lastInsertRowid: newId } = db
+        .prepare(
+          `INSERT INTO cards (classes, type, rarity, cardPackId, cost, name, isReborn, isToken, image, tokenIds, parentIds) VALUES ($classes, $type, $rarity, $cardPackId, $cost, $name, $isReborn, $isToken, $image, $tokenIds, $parentIds)`,
+        )
+        .run({
+          classes,
+          type,
+          rarity,
+          cardPackId,
+          cost,
+          name,
+          isReborn,
+          isToken,
+          image,
+          tokenIds: tokenIds?.join(','),
+          parentIds: parentIds?.join(','),
+        });
+
+      // 新增卡片详情
+      cardDetails?.forEach((detail) => {
+        const { lastInsertRowid: newDetailId } = db
+          .prepare(
+            `INSERT INTO cardDetails (cardId, evolvedStage, attack, health, description) VALUES ($cardId, $evolvedStage, $attack, $health, $description)`,
+          )
+          .run({
+            cardId: newId,
+            ...detail,
+          });
+
+        // 新增卡片详情与能力关键字的关联关系
+        detail.abilityIds?.forEach((abilityId) => {
+          db.prepare(
+            `INSERT INTO cardDetailAbilities (cardDetailId, abilityId) VALUES ($cardDetailId, $abilityId)`,
+          ).run({
+            cardDetailId: newDetailId,
+            abilityId,
+          });
+        });
+      });
+
+      // 新增卡片与兵种的关联关系
+      traitIds?.forEach((traitId) => {
+        db.prepare(
+          `INSERT INTO cardTraits (cardId, traitId) VALUES ($cardId, $traitId)`,
+        ).run({
+          cardId: newId,
+          traitId,
+        });
+      });
+    }
+  })();
 }
 
-function deleteCard({ id }: { id?: number }) {
+// 删除卡片
+function deleteCard({ id }: DB.Cards) {
   const db = getInstance();
 
-  const cardDetails = db
-    .prepare(
-      `
-        SELECT * FROM cardDetails
-        WHERE cardId = $id
-        LIMIT 1
-      `,
-    )
-    .get({ id });
+  db.transaction(() => {
+    // 删除卡片与兵种的关联关系
+    db.prepare(`DELETE FROM cardTraits WHERE cardId = $id`).run({ id });
 
-  if (cardDetails) {
-    return;
-  }
+    // 删除卡片详情
+    db.prepare(`DELETE FROM cardDetails WHERE cardId = $id`).run({ id });
 
-  db.prepare(
-    `
-    DELETE FROM cards
-    WHERE id = $id
-  `,
-  ).run({ id });
+    // 删除卡片
+    db.prepare(`DELETE FROM cards WHERE id = $id`).run({ id });
+  })();
 }
 
-/** ******************************* 卡片详情 *********************************** */
-
-async function getCardDetails({
-  cardId,
-  evolutionStage,
-  attack,
-  health,
-  description,
-  current = 1,
-  pageSize = 10,
-  pagination = true,
-}: DB.CardDetails & {
-  current?: number;
-  pageSize?: number;
-  pagination?: boolean;
-}): Promise<any> {
+// 查询单卡
+async function getCard({ id }: DB.Cards): Promise<any> {
   const db = getInstance();
 
-  let sql = `
-    SELECT *
-    FROM cardDetails
-    WHERE 1=1
-  `;
+  const sql = `SELECT cards.*,
+cardPacks.id as cardPackId,
+GROUP_CONCAT(DISTINCT traits.id) as traitIds,
+GROUP_CONCAT(cardDetails.id || ',' || cardDetails.evolvedStage || ',' || cardDetails.attack || ',' || cardDetails.health || ',' || cardDetails.description, ';') as cardDetails,
+GROUP_CONCAT(DISTINCT abilities.id) as abilityIds
+FROM cards LEFT JOIN cardDetails ON cards.id = cardDetails.cardId
+LEFT JOIN cardPacks ON cards.cardPackId = cardPacks.id
+LEFT JOIN cardTraits ON cards.id = cardTraits.cardId
+LEFT JOIN traits ON cardTraits.traitId = traits.id
+LEFT JOIN cardDetailAbilities ON cardDetails.id = cardDetailAbilities.cardDetailId
+LEFT JOIN abilities ON cardDetailAbilities.abilityId = abilities.id
+WHERE cards.id = $id`;
 
-  const params = {
-    cardId,
-    evolutionStage,
-    attack,
-    health,
-    description,
-  };
+  const result = db.prepare(`${sql}`).get({ id });
 
-  if (cardId) {
-    sql += ` AND cardId = $cardId`;
-  }
-
-  if (evolutionStage) {
-    sql += ` AND evolutionStage LIKE $evolutionStage`;
-  }
-  if (attack) {
-    sql += ` AND attack = $attack`;
-  }
-  if (health) {
-    sql += ` AND health = $health`;
-  }
-  if (description) {
-    sql += ` AND description LIKE $description`;
-    params.description = `%${description}%`;
-  }
-
-  if (pagination) {
-    return getPagedData({
-      current,
-      pageSize,
-      getRows: (limit, offset) => {
-        return db.prepare(`${sql} LIMIT ? OFFSET ?`).all(limit, offset, params);
-      },
-      getCount: () => {
-        // @ts-ignore
-        return db.prepare(`SELECT COUNT(*) FROM (${sql})`).get(params)[
-          'COUNT(*)'
-        ];
-      },
-    });
-  }
-  return db.prepare(`${sql}`).all(params);
-}
-
-function setCardDetails({
-  id,
-  cardId,
-  evolutionStage,
-  attack,
-  health,
-  description,
-}: DB.CardDetails): void {
-  const db = getInstance();
-  db.prepare(
-    `
-    INSERT OR REPLACE INTO roles (id, cardId, evolutionStage, attack, health, description)
-    VALUES ($id, $cardId, $evolutionStage, $attack, $health, $description)
-  `,
-  ).run({
-    id,
-    cardId,
-    evolutionStage,
-    attack,
-    health,
-    description,
+  // 将卡片详情字符串解析成对象数组
+  // @ts-ignore
+  result.cardDetails = result.cardDetails?.split(';').map((detail) => {
+    const [cardDetailsId, evolvedStage, attack, health, description] =
+      detail.split(',');
+    return {
+      id: Number(cardDetailsId),
+      evolvedStage: Number(evolvedStage),
+      attack: Number(attack),
+      health: Number(health),
+      description,
+    };
   });
-}
 
-function deleteCardDetails({ id }: { id?: number }) {
-  const db = getInstance();
-  db.prepare(
-    `
-    DELETE FROM cardDetails
-    WHERE id = $id
-  `,
-  ).run({ id });
-}
+  // @ts-ignore
+  result.traitIds = result.traitIds?.split(',').map((item) => Number(item));
 
-async function getCard({ id }: DB.Card): Promise<any> {
-  const db = getInstance();
-
-  const sql = `
-    SELECT
-    cards.*,
-    roles.name AS roleName,
-    roles.label AS roleLabel,
-    roles.avatar AS roleAvatar,
-    roles.gem AS roleGem,
-    roles.emblem AS roleEmblem,
-    roles.background AS roleBackground,
-    types.name AS typeName,
-    types.label AS typeLabel,
-    traits.name AS traitName,
-    traits.label AS traitLabel,
-    rarities.name AS rarityName,
-    rarities.label AS rarityLabel,
-    cardPacks.name AS cardPackName,
-    cardPacks.label AS cardPackLabel,
-    cardPacks.sort AS cardPackSort,
-    cardPacks.description AS cardPackDescription,
-    GROUP_CONCAT(cardDetails.evolutionStage) AS evolutionStages,
-    GROUP_CONCAT(cardDetails.attack) AS attacks,
-    GROUP_CONCAT(cardDetails.health) AS healths,
-    GROUP_CONCAT(cardDetails.description) AS cardDetailsDescriptions
-    FROM
-        cards
-    LEFT JOIN
-        roles ON cards.roleId = roles.id
-    LEFT JOIN
-        types ON cards.typeId = types.id
-    LEFT JOIN
-        traits ON cards.traitId = traits.id
-    LEFT JOIN
-        rarities ON cards.rarityId = rarities.id
-    LEFT JOIN
-        cardPacks ON cards.cardPackId = cardPacks.id
-    LEFT JOIN
-        cardDetails ON cards.id = cardDetails.cardId
-    WHERE
-        cards.id = $id
-    GROUP BY
-        cards.id;
-  `;
-
-  return db.prepare(`${sql}`).get({ id });
+  return result;
 }
 
 const dataInterface: ServerInterface = {
@@ -785,9 +636,6 @@ const dataInterface: ServerInterface = {
   getCards,
   setCard,
   deleteCard,
-  getCardDetails,
-  setCardDetails,
-  deleteCardDetails,
   getCard,
 };
 

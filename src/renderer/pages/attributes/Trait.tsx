@@ -1,40 +1,33 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { DrawerForm, ProFormText, ProTable } from '@ant-design/pro-components';
+import { ModalForm, ProFormText, ProTable } from '@ant-design/pro-components';
 import { Button, Form, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
 
-// 兵种
 export default function Trait() {
   const actionRef = useRef<ActionType>();
-  const [form] = Form.useForm<DB.Trait>();
+  const [form] = Form.useForm<DB.Traits>();
   const [formOpen, setFormOpen] = useState<boolean>(false);
-  const [formReadOnly, setFormReadOnly] = useState<boolean>(false);
 
-  const onCreateFinish = (values: DB.Trait) => {
+  const onCreateFinish = (values: DB.Traits) => {
     window.Context.sqlClient.setTrait(values);
     actionRef.current?.reload();
   };
 
-  const onDelete = (id: DB.Trait['id']) => {
+  const onDelete = (id: DB.Traits['id']) => {
     window.Context.sqlClient.deleteTrait({ id });
     actionRef.current?.reload();
   };
 
-  const columns: ProColumns<DB.Trait>[] = [
+  const columns: ProColumns<DB.Traits>[] = [
     {
       dataIndex: 'index',
       valueType: 'indexBorder',
       width: 48,
     },
     {
-      title: '兵种关键字',
+      title: '兵种名称',
       dataIndex: 'name',
-      ellipsis: true,
-    },
-    {
-      title: '兵种展示名称',
-      dataIndex: 'label',
       ellipsis: true,
     },
     {
@@ -42,29 +35,17 @@ export default function Trait() {
       valueType: 'option',
       key: 'option',
       align: 'center',
-      width: 212,
+      width: 144,
       render: (text, record) => [
         <Button
           key="edit"
           type="text"
           onClick={() => {
             form.setFieldsValue(record);
-            setFormReadOnly(false);
             setFormOpen(true);
           }}
         >
           编辑
-        </Button>,
-        <Button
-          key="view"
-          type="text"
-          onClick={() => {
-            form.setFieldsValue(record);
-            setFormReadOnly(true);
-            setFormOpen(true);
-          }}
-        >
-          查看
         </Button>,
         <Popconfirm
           title="你确定要删除此兵种吗？"
@@ -79,11 +60,14 @@ export default function Trait() {
   ];
 
   return (
-    <ProTable<DB.Trait>
+    <ProTable<DB.Traits>
       columns={columns}
       actionRef={actionRef}
       request={async (params) => {
-        return window.Context.sqlClient.getTraits(params);
+        const res = await window.Context.sqlClient.getTraits(
+          params as DB.Traits,
+        );
+        return { success: true, data: res };
       }}
       options={false}
       rowKey="id"
@@ -91,27 +75,18 @@ export default function Trait() {
       pagination={{ pageSize: 10 }}
       dateFormatter="string"
       toolBarRender={() => [
-        <DrawerForm<DB.Trait>
+        <ModalForm<DB.Traits>
           open={formOpen}
           onOpenChange={setFormOpen}
-          title={`${formReadOnly ? '查看' : '编辑'}兵种`}
+          title="编辑兵种"
           form={form}
-          readonly={formReadOnly}
           trigger={
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setFormReadOnly(false)}
-            >
+            <Button type="primary" icon={<PlusOutlined />}>
               新建
             </Button>
           }
-          resize={{
-            maxWidth: window.innerWidth * 0.8,
-            minWidth: 300,
-          }}
           autoFocusFirstInput
-          drawerProps={{
+          modalProps={{
             destroyOnClose: true,
           }}
           onFinish={async (values) => {
@@ -120,9 +95,8 @@ export default function Trait() {
           }}
         >
           <ProFormText name="id" hidden />
-          <ProFormText name="name" label="兵种关键字" />
-          <ProFormText name="label" label="兵种展示名称" />
-        </DrawerForm>,
+          <ProFormText name="name" label="兵种名称" />
+        </ModalForm>,
       ]}
     />
   );

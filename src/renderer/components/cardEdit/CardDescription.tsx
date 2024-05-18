@@ -8,12 +8,12 @@ export default function CardDescription() {
       <div className="card-description-follower-attr">
         <div>进化前</div>
         <div className="card-details-attr right-[138px]">
-          <Form.Item noStyle name="attack">
+          <Form.Item noStyle name="unevolvedAttack" initialValue={0}>
             <CardDetailsInputNumber />
           </Form.Item>
         </div>
         <div className="card-details-attr right-[42px]">
-          <Form.Item noStyle name="health">
+          <Form.Item noStyle name="unevolvedHealth" initialValue={0}>
             <CardDetailsInputNumber />
           </Form.Item>
         </div>
@@ -26,18 +26,20 @@ export default function CardDescription() {
       <div className="card-description-follower-attr !top-[230px]">
         <div>进化后</div>
         <div className="card-details-attr right-[138px]">
-          <Form.Item noStyle name="evolvedAttack">
+          <Form.Item noStyle name="evolvedAttack" initialValue={0}>
             <CardDetailsInputNumber />
           </Form.Item>
         </div>
         <div className="card-details-attr right-[42px]">
-          <Form.Item noStyle name="evolvedHealth">
+          <Form.Item noStyle name="evolvedHealth" initialValue={0}>
             <CardDetailsInputNumber />
           </Form.Item>
         </div>
       </div>
       <div className="crad-details-follower-unevolved crad-details-follower-evolved">
-        2
+        <Form.Item noStyle name="evolvedDescription">
+          <CardDetailsTextArea />
+        </Form.Item>
       </div>
     </div>
   );

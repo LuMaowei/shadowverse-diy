@@ -7,69 +7,53 @@ declare global {
     }
 
     // 兵种
-    interface Trait {
+    interface Traits {
       id?: number;
-      name?: string;
+      name?: string; // 名称
     }
 
     // 能力关键字
-    interface Ability {
+    interface Abilities {
       id?: number;
-      name?: string;
-      sort?: number;
-      description?: string;
+      name?: string; // 名称
+      sort?: number; // 排序
+      description?: string; // 描述
     }
 
     // 卡包
-    interface CardPack {
+    interface CardPacks {
       id?: number;
-      name?: string;
-      sort?: number;
-      description?: string;
+      name?: string; // 名称
+      sort?: number; // 排序
+      description?: string; // 描述
     }
 
     // 卡片
-    interface Card {
+    interface Cards {
       id?: number;
-      classes?: string;
-      type?: string;
-      rarity?: string;
-      traitIds?: number;
-      cardPackId?: number;
-      cost?: number;
-      name?: string;
-      isToken?: number;
-      tokenIds?: string;
-      parentId?: number;
-      isReborn?: number;
-      image?: string;
+      classes?: string; // 职业
+      type?: string; // 类型
+      rarity?: string; // 稀有度
+      cardPackId?: number; // 所属卡包id
+      cost?: number; // 消费
+      name?: string; // 名称
+      isReborn?: number; // 是否为复生卡
+      isToken?: number; // 是否为特殊卡
+      image?: string; // 图片base64码
+      traitIds?: number; // 兵种id列表
+      tokenIds?: string; // 特殊卡id列表
+      parentIds?: string; // 所属卡片id列表
     }
 
     // 卡片描述
     interface CardDetails {
       id?: number;
-      cardId?: number;
-      evolvedStage?: number;
-      attack?: number;
-      health?: number;
-      abilityIds?: string;
-      description?: string;
-    }
-
-    // 单卡信息
-    interface CardSingle extends DB.Card {
-      traitKey?: string;
-      traitName?: string;
-      cardPackKey?: string;
-      cardPackName?: string;
-      cardPackSort?: number;
-      cardPackDescription?: string;
-      evolutionStages?: string;
-      attacks?: string;
-      healths?: string;
-      abilityKeys?: string;
-      abilityNames?: string;
-      cardDetailsDescriptions?: string;
+      cardId?: number; // 所属卡片id
+      evolvedStage?: number; // 进化状态
+      attack?: number; // 攻击
+      health?: number; // 生命
+      description?: string; // 描述
+      abilityIds?: string; // 能力关键字id列表
     }
   }
 }

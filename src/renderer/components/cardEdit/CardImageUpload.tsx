@@ -20,7 +20,7 @@ export default function CardImageUpload(props: {
   };
 
   return (
-    <ImgCrop rotationSlider showReset aspect={290 / 363} showGrid quality={1}>
+    <ImgCrop rotationSlider showReset aspect={290 / 363} showGrid>
       <Upload maxCount={1} beforeUpload={beforeUpload}>
         {!value && (
           <div className="relative z-[-1] w-[290px] h-[363px] bg-white flex justify-center items-center">

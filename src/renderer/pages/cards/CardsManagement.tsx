@@ -1,48 +1,32 @@
 import { PlusOutlined } from '@ant-design/icons';
-import {
-  ActionType,
-  DrawerForm,
-  ProColumns,
-  ProFormDigit,
-  ProFormSwitch,
-  ProFormText,
-  ProTable,
-} from '@ant-design/pro-components';
-import { Button, Form, Popconfirm } from 'antd';
-import { useRef, useState } from 'react';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
+import { Button, Popconfirm } from 'antd';
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SingleImageUpload from '../../components/SingleImageUpload';
-import DataTableSelect from '../../components/DataTableSelect';
+import classesMap from '../../config/classes';
+import { RaritiesEnum, TypesEnum } from '../../config/types';
 
 // 卡片
 export default function CardsManagement() {
   const actionRef = useRef<ActionType>();
-  const [form] = Form.useForm<DB.Card>();
-  const [formOpen, setFormOpen] = useState<boolean>(false);
-  const [formReadOnly, setFormReadOnly] = useState<boolean>(false);
 
   const navigator = useNavigate();
 
-  const onCreateFinish = (values: DB.Card) => {
-    const { isToken, isReborn, ...rest } = values;
-    window.Context.sqlClient.setCard({
-      ...rest,
-      isToken: Number(isToken),
-      isReborn: Number(isReborn),
-    });
-    actionRef.current?.reload();
-  };
-
-  const onDelete = (id: DB.Card['id']) => {
+  const onDelete = (id: DB.Cards['id']) => {
     window.Context.sqlClient.deleteCard({ id });
     actionRef.current?.reload();
   };
 
-  const columns: ProColumns<DB.Card>[] = [
+  const columns: ProColumns<DB.Cards>[] = [
     {
       dataIndex: 'index',
       valueType: 'indexBorder',
       width: 48,
+    },
+    {
+      title: '卡包',
+      dataIndex: 'cardPackName',
+      search: false,
     },
     {
       title: '名称',
@@ -50,46 +34,27 @@ export default function CardsManagement() {
       ellipsis: true,
     },
     {
-      title: '所属职业',
-      dataIndex: 'roleName',
-      ellipsis: true,
+      title: '职业',
+      dataIndex: 'classes',
+      render: (text) => classesMap[text as string].name,
+      search: false,
     },
     {
       title: '类型',
-      dataIndex: 'typeLabel',
-      ellipsis: true,
-    },
-    {
-      title: '兵种',
-      dataIndex: 'traitLabel',
-      ellipsis: true,
+      dataIndex: 'type',
+      render: (text) => TypesEnum[text as string],
+      search: false,
     },
     {
       title: '稀有度',
-      dataIndex: 'rarityLabel',
-      ellipsis: true,
-    },
-    {
-      title: '所属卡包',
-      dataIndex: 'cardPackLabel',
-      ellipsis: true,
-    },
-    {
-      title: '消费',
-      dataIndex: 'cost',
-      ellipsis: true,
-    },
-    {
-      title: '特殊卡',
-      dataIndex: 'isToken',
-      ellipsis: true,
-    },
-    {
-      title: '图片',
-      dataIndex: 'image',
+      dataIndex: 'rarity',
+      render: (text) => RaritiesEnum[text as string],
       search: false,
-      valueType: 'image',
-      align: 'center',
+    },
+    {
+      title: '兵种',
+      dataIndex: 'traitNameList',
+      search: false,
     },
     {
       title: '操作',
@@ -102,10 +67,7 @@ export default function CardsManagement() {
           key="edit"
           type="text"
           onClick={() => {
-            form.setFieldsValue(record);
-            setFormReadOnly(false);
-            setFormOpen(true);
-            navigator(`/card/edit/${record.id}`);
+            navigator(`/cards/edit/${record.id}`);
           }}
         >
           编辑
@@ -114,9 +76,7 @@ export default function CardsManagement() {
           key="view"
           type="text"
           onClick={() => {
-            form.setFieldsValue(record);
-            setFormReadOnly(true);
-            setFormOpen(true);
+            navigator(`/cards/edit/${record.id}`);
           }}
         >
           查看
@@ -134,11 +94,15 @@ export default function CardsManagement() {
   ];
 
   return (
-    <ProTable<DB.Card>
+    <ProTable<DB.Cards>
       columns={columns}
       actionRef={actionRef}
       request={async (params) => {
-        return window.Context.sqlClient.getCards(params);
+        const res = await window.Context.sqlClient.getCards(
+          params as DB.Cards & { traitIds?: number[] },
+        );
+        console.log(res);
+        return { success: true, data: res };
       }}
       options={false}
       rowKey="id"
@@ -146,72 +110,15 @@ export default function CardsManagement() {
       pagination={{ pageSize: 10 }}
       dateFormatter="string"
       toolBarRender={() => [
-        <DrawerForm<DB.Card>
-          open={formOpen}
-          onOpenChange={setFormOpen}
-          title={`${formReadOnly ? '查看' : '编辑'}卡片`}
-          form={form}
-          readonly={formReadOnly}
-          trigger={
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setFormReadOnly(false);
-                // navigator('/card/edit');
-              }}
-            >
-              新建
-            </Button>
-          }
-          resize={{
-            maxWidth: window.innerWidth * 0.8,
-            minWidth: 300,
-          }}
-          autoFocusFirstInput
-          drawerProps={{
-            destroyOnClose: true,
-          }}
-          onFinish={async (values) => {
-            onCreateFinish(values);
-            return true;
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            navigator('/cards/edit');
           }}
         >
-          <ProFormText name="id" hidden />
-          <Form.Item name="roleId" label="所属职业">
-            <DataTableSelect dataTable="role" />
-          </Form.Item>
-          <Form.Item name="typeId" label="类型">
-            <DataTableSelect dataTable="type" />
-          </Form.Item>
-          <Form.Item name="traitId" label="兵种">
-            <DataTableSelect dataTable="trait" />
-          </Form.Item>
-          <Form.Item name="rarityId" label="稀有度">
-            <DataTableSelect dataTable="rarity" />
-          </Form.Item>
-          <Form.Item name="cardPackId" label="所属卡包">
-            <DataTableSelect dataTable="cardPack" />
-          </Form.Item>
-          <ProFormText name="name" label="名称" />
-          <ProFormDigit
-            name="sort"
-            label="排序"
-            min={1}
-            fieldProps={{ precision: 0 }}
-          />
-          <ProFormDigit
-            name="cost"
-            label="消费"
-            min={1}
-            fieldProps={{ precision: 0 }}
-          />
-          <ProFormSwitch name="isToken" label="是否为特殊卡" />
-          <ProFormSwitch name="isReborn" label="是否为复苏卡" />
-          <Form.Item name="image" label="图片">
-            <SingleImageUpload disabled={formReadOnly} />
-          </Form.Item>
-        </DrawerForm>,
+          新建
+        </Button>,
       ]}
     />
   );

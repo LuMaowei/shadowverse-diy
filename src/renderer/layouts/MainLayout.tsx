@@ -150,6 +150,7 @@ export default function MainLayout(): JSX.Element {
             />,
           ];
         }}
+        pageTitleRender={false}
       >
         <PageContainer>
           <ProCard className="min-h-[calc(100vh-160px)]">
