@@ -438,6 +438,7 @@ function setCard({
   cardPackId,
   cost,
   name,
+  illustrator,
   isReborn,
   isToken,
   image,
@@ -457,7 +458,7 @@ function setCard({
     if (id) {
       db.prepare(
         `UPDATE cards SET classes = $classes, type = $type, rarity = $rarity, cardPackId = $cardPackId, cost = $cost, name = $name,
-        isReborn = $isReborn, isToken = $isToken, image = $image, tokenIds = $tokenIds, parentIds = $parentIds WHERE id = $id`,
+        illustrator = $illustrator, isReborn = $isReborn, isToken = $isToken, image = $image, tokenIds = $tokenIds, parentIds = $parentIds WHERE id = $id`,
       ).run({
         id,
         classes,
@@ -466,6 +467,7 @@ function setCard({
         cardPackId,
         cost,
         name,
+        illustrator,
         isReborn,
         isToken,
         image,
@@ -514,7 +516,7 @@ description = $description WHERE id = $id`,
     } else {
       const { lastInsertRowid: newId } = db
         .prepare(
-          `INSERT INTO cards (classes, type, rarity, cardPackId, cost, name, isReborn, isToken, image, tokenIds, parentIds) VALUES ($classes, $type, $rarity, $cardPackId, $cost, $name, $isReborn, $isToken, $image, $tokenIds, $parentIds)`,
+          `INSERT INTO cards (classes, type, rarity, cardPackId, cost, name, illustrator, isReborn, isToken, image, tokenIds, parentIds) VALUES ($classes, $type, $rarity, $cardPackId, $cost, $name, $illustrator, $isReborn, $isToken, $image, $tokenIds, $parentIds)`,
         )
         .run({
           classes,
@@ -523,6 +525,7 @@ description = $description WHERE id = $id`,
           cardPackId,
           cost,
           name,
+          illustrator,
           isReborn,
           isToken,
           image,

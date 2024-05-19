@@ -37,6 +37,7 @@ declare global {
       cardPackId?: number; // 所属卡包id
       cost?: number; // 消费
       name?: string; // 名称
+      illustrator?: string; // 绘师
       isReborn?: number; // 是否为复生卡
       isToken?: number; // 是否为特殊卡
       image?: string; // 图片base64码

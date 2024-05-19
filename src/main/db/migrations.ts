@@ -55,6 +55,7 @@ function updateToSchemaVersion1(
         cardPackId STRING,
         cost INTEGER,
         name STRING,
+        illustrator STRING,
         isReborn INTEGER,
         isToken INTEGER,
         image TEXT,

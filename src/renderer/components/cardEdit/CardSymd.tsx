@@ -36,6 +36,7 @@ function getNumberImagePath(number: number) {
   // 根据数字的每一位返回对应的图片路径
   return numberStr.split('').map((digit: string, index: number) => ({
     key: index,
+    value: digit,
     path: numberImages[parseInt(digit, 10)],
   }));
 }
@@ -57,8 +58,8 @@ export default function CardSymd(props: {
         {numberImagePath.map((item) => (
           <img
             className="mx-[-8px]"
-            width={56}
-            height={56}
+            width={item.value === '1' ? 46 : 50}
+            height={50}
             key={item.key}
             src={item.path}
             alt=""

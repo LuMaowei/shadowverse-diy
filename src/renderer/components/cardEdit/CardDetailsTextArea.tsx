@@ -69,7 +69,7 @@ function CardDetailsTextArea(props: CardDetailsTextAreaProps) {
         onChange={handleChange}
         defaultConfig={editorConfig}
         value={value}
-        mode="default"
+        mode="simple"
         style={{ height }}
       />
       <AbilityInput
