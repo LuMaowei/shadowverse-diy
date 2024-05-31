@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, dialog } from 'electron';
+import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
 
 export default function windowController(window: BrowserWindow) {
   ipcMain.on('window:minimize', () => {
@@ -33,5 +33,9 @@ export default function windowController(window: BrowserWindow) {
       .then((res) => {
         event.sender.send(`selected-file-${eventId}`, res);
       });
+  });
+
+  ipcMain.on('open-url', (event, url) => {
+    shell.openExternal(url);
   });
 }

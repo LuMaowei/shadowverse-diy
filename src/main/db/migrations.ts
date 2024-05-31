@@ -60,7 +60,7 @@ function updateToSchemaVersion1(
         isToken INTEGER,
         image TEXT,
         tokenIds STRING,
-        parentIds INTEGER,
+        parentIds STRING,
         FOREIGN KEY (cardPackId) REFERENCES cardPacks(id)
       );
 
@@ -86,7 +86,7 @@ function updateToSchemaVersion1(
         evolvedStage INTEGER,
         attack INTEGER,
         health INTEGER,
-        description STRING,
+        description TEXT,
         FOREIGN KEY (cardId) REFERENCES cards(id)
       );
 

@@ -21,18 +21,18 @@ export default function CardEdit(): JSX.Element {
   const type = Form.useWatch('type', form);
   const rarity = Form.useWatch('rarity', form);
   const isToken = Form.useWatch('isToken', form);
-  const svCardRef = useRef();
+  const name = Form.useWatch('name', form);
+  const svCardRef = useRef<HTMLDivElement>(null);
 
   const { frame } = framesMap[`${type}_${rarity}`] || {};
-  const { key, name, avatar, gem, emblem, background } =
-    classesMap[classes] || {};
+  const { gem, emblem, background } = classesMap[classes] || {};
 
   const fetchCardInfo = () => {
     window.Context.sqlClient.getCard({ id: Number(id) }).then((res) => {
+      console.log(res);
       const { cardDetails, ...rest } = res;
-      console.log(cardDetails);
       const result: any = {};
-      cardDetails.forEach((item: any) => {
+      cardDetails?.forEach((item: any) => {
         if (item.evolvedStage === 0) {
           result.unevolvedId = item.id;
           result.unevolvedAttack = item.attack;
@@ -46,7 +46,11 @@ export default function CardEdit(): JSX.Element {
         }
       });
       console.log({ ...rest, ...result });
-      form.setFieldsValue({ ...rest, ...result });
+      form.setFieldsValue({
+        ...rest,
+        ...result,
+        showIllustrator: !!rest.illustrator,
+      });
     });
   };
 
@@ -67,8 +71,8 @@ export default function CardEdit(): JSX.Element {
       {
         id: unevolvedId,
         evolvedStage: 0,
-        attack: unevolvedAttack,
-        health: unevolvedHealth,
+        attack: unevolvedAttack || 0,
+        health: unevolvedHealth || 0,
         description: unevolvedDescription,
         abilityIds: [],
       },
@@ -77,8 +81,8 @@ export default function CardEdit(): JSX.Element {
       cardDetails.push({
         id: evolvedId,
         evolvedStage: 1,
-        attack: evolvedAttack,
-        health: evolvedHealth,
+        attack: evolvedAttack || 0,
+        health: evolvedHealth || 0,
         description: evolvedDescription,
         abilityIds: [],
       });
@@ -104,9 +108,9 @@ export default function CardEdit(): JSX.Element {
   };
 
   const onExport = () => {
-    domToPng(svCardRef.current).then((dataUrl) => {
+    domToPng(svCardRef.current!).then((dataUrl) => {
       const link = document.createElement('a');
-      link.download = 'screenshot.png';
+      link.download = `${name}.png`;
       link.href = dataUrl;
       link.click();
     });
@@ -123,6 +127,15 @@ export default function CardEdit(): JSX.Element {
         }}
       >
         <Flex id="toolbar" gap={16}>
+          <Form.Item hidden name="id">
+            <InputNumber />
+          </Form.Item>
+          <Form.Item hidden name="unevolvedId">
+            <InputNumber />
+          </Form.Item>
+          <Form.Item hidden name="evolvedId">
+            <InputNumber />
+          </Form.Item>
           <Form.Item name="cardPackId" label="所属卡包">
             <DataTableSelect className="!w-[160px]" dataTable="cardPack" />
           </Form.Item>
@@ -138,6 +151,9 @@ export default function CardEdit(): JSX.Element {
                 className="!w-[160px]"
                 dataTable="card"
                 mode="multiple"
+                handleOptions={(cards) =>
+                  cards.filter((item) => `${item.id}` !== `${id}`)
+                }
               />
             </Form.Item>
           ) : null}
@@ -165,15 +181,6 @@ export default function CardEdit(): JSX.Element {
           }}
         >
           <div className="card-container-mask" />
-          <Form.Item name="id">
-            <InputNumber />
-          </Form.Item>
-          <Form.Item name="unevolvedId">
-            <InputNumber />
-          </Form.Item>
-          <Form.Item name="evolvedId">
-            <InputNumber />
-          </Form.Item>
           <CardHead emblem={emblem} scale={scale} />
           <div
             className="card-main-border"

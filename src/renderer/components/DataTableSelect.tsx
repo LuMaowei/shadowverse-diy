@@ -25,9 +25,12 @@ type DataTable = 'trait' | 'ability' | 'cardPack' | 'card';
 type OptionsType = DB.Traits[] | DB.Abilities[] | DB.CardPacks[] | DB.Cards[];
 
 export default function DataTableSelect(
-  props: SelectProps & { dataTable: DataTable },
+  props: SelectProps & {
+    dataTable: DataTable;
+    handleOptions?: (options: OptionsType) => OptionsType;
+  },
 ) {
-  const { dataTable, ...rest } = props;
+  const { dataTable, handleOptions, ...rest } = props;
   // @ts-ignore
   const [options, setOptions] = useState<OptionsType>([]);
   const currentApi = apiMap[dataTable];
@@ -41,7 +44,7 @@ export default function DataTableSelect(
   return (
     <Select
       allowClear
-      options={options}
+      options={handleOptions?.(options) || options}
       fieldNames={{ label: currentApi.label, value: currentApi.value }}
       {...rest}
     />

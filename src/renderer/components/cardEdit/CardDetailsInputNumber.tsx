@@ -15,6 +15,7 @@ export default function CardDetailsInputNumber(props: {
   return (
     <InputNumber
       autoFocus
+      controls={false}
       precision={0}
       min={0}
       max={99}

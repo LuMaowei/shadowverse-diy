@@ -4,13 +4,25 @@ import classesMap, { classesList } from '../../config/classes';
 
 export default function CardHead(props: { emblem?: string; scale: number }) {
   const { emblem, scale } = props;
+  const formInstance = Form.useFormInstance();
+  const name = Form.useWatch('name', formInstance);
+  const fontSize =
+    (name?.length || 0) <= 5 ? 32 : Math.max(40 - (name?.length || 0), 16);
   return (
     <Flex
       className="card-head"
-      justify="end"
+      justify="space-between"
       gap={8}
       style={{ transform: `scale(${scale})` }}
     >
+      <table>
+        <tbody>
+          <tr className="h-[37px]" />
+          <tr>
+            <td style={{ fontSize }}>{name}</td>
+          </tr>
+        </tbody>
+      </table>
       <table>
         <tbody>
           <tr>
@@ -37,6 +49,7 @@ export default function CardHead(props: { emblem?: string; scale: number }) {
             <td>
               <Form.Item noStyle name="traitIds">
                 <DataTableSelect
+                  placeholder="-"
                   className="card-head-select min-w-[96px]"
                   allowClear={false}
                   dataTable="trait"

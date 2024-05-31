@@ -1,5 +1,4 @@
-import { app, contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import path from 'path';
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import sqlClient from './db/client';
 
 const {
@@ -19,14 +18,6 @@ const {
   deleteCard,
   getCard,
 } = sqlClient;
-
-const getAssetPath = (...paths: string[]): string => {
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
-
-  return path.join(RESOURCES_PATH, ...paths);
-};
 
 const electronHandler = {
   ipcRenderer: {
@@ -51,7 +42,6 @@ const contextHandler = {
   platform: process.platform,
   NODE_ENV: process.env.NODE_ENV,
   ROOT_PATH: window.location.href.startsWith('file') ? '../../' : '/',
-  getAssetPath,
   sqlClient: {
     close,
     removeDB,

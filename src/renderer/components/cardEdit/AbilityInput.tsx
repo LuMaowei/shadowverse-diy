@@ -30,8 +30,16 @@ function AbilityInput(
     left: 0,
   });
   const [selectOpen, setSelectOpen] = useState(false);
+  const [options, setOptions] = useState<DB.Abilities[]>([]);
+
   const holderRef = useRef<HTMLDivElement>(null);
   const selectRef = useRef<BaseSelectRef>(null);
+
+  useEffect(() => {
+    window.Context.sqlClient.getAbilities({}).then((res: DB.Abilities[]) => {
+      setOptions(res);
+    });
+  }, []);
 
   useEffect(() => {
     if (selectOpen) {
@@ -44,7 +52,9 @@ function AbilityInput(
     const domRange = domSelection?.getRangeAt(0);
     if (domRange == null) return;
     const rect = domRange.getBoundingClientRect();
+    // @ts-ignore
     const parent = domRange.commonAncestorContainer.parentElement.offsetParent;
+    // @ts-ignore
     const parentRect = parent.getBoundingClientRect();
     let tempLeft = rect.left - parentRect.left;
     if (tempLeft + 240 > parentRect.width) {
@@ -63,7 +73,7 @@ function AbilityInput(
   const close = () => {
     setSelectOpen(false);
     setStyle((v) => ({ ...v, display: 'none' }));
-    editor.restoreSelection();
+    editor?.restoreSelection();
   };
 
   useImperativeHandle(ref, () => ({
@@ -82,7 +92,7 @@ function AbilityInput(
         placement="topLeft"
         open={selectOpen}
         onSelect={onSelect}
-        options={[{ name: '入场曲', id: 1 }]}
+        options={options}
         fieldNames={{ label: 'name', value: 'id' }}
         getPopupContainer={() => holderRef.current!}
         onInputKeyDown={(e) => {

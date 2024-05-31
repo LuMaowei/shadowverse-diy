@@ -184,6 +184,8 @@ header {
   }
 
   .card-head-select {
+    display: block;
+
     .ant-select-selector {
       padding: 0;
     }
@@ -194,6 +196,11 @@ header {
 
     .ant-select-selection-item-content {
       margin-inline-end: 0;
+    }
+
+    .ant-select-selection-placeholder {
+      color: #fff;
+      font-size: 24px;
     }
 
     .ant-select-selection-item {

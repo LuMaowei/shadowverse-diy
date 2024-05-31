@@ -30,6 +30,7 @@ function CardDetailsTextArea(props: CardDetailsTextAreaProps) {
   };
 
   const editorConfig = {
+    autoFocus: false,
     EXTEND_CONF: {
       abilityConfig: {
         showModal: showAbilityInput,

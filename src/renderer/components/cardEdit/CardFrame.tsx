@@ -47,7 +47,7 @@ export default function CardFrame(props: {
       </Form.Item>
       <img className="card-frame-background" src={frame} alt="" />
       <img className="absolute left-[180px] bottom-[44px]" src={gem} alt="" />
-      {isReborn && (
+      {!!isReborn && (
         <img
           className="absolute top-[115px] left-[-4px]"
           src={rebornFrame}

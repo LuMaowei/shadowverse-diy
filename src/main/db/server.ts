@@ -413,7 +413,7 @@ LEFT JOIN traits ON cardTraits.traitId = traits.id`;
     conditions.push('isToken = $isToken');
   }
   if (name) {
-    conditions.push('name LIKE $name');
+    conditions.push('cards.name LIKE $name');
     params.name = `%${name}%`;
   }
   if (traitIds && traitIds.length > 0) {
@@ -591,7 +591,7 @@ async function getCard({ id }: DB.Cards): Promise<any> {
   const sql = `SELECT cards.*,
 cardPacks.id as cardPackId,
 GROUP_CONCAT(DISTINCT traits.id) as traitIds,
-GROUP_CONCAT(cardDetails.id || ',' || cardDetails.evolvedStage || ',' || cardDetails.attack || ',' || cardDetails.health || ',' || cardDetails.description, ';') as cardDetails,
+GROUP_CONCAT(cardDetails.id || '||,' || cardDetails.evolvedStage || '||,' || cardDetails.attack || '||,' || cardDetails.health || '||,' || cardDetails.description, ';') as cardDetails,
 GROUP_CONCAT(DISTINCT abilities.id) as abilityIds
 FROM cards LEFT JOIN cardDetails ON cards.id = cardDetails.cardId
 LEFT JOIN cardPacks ON cards.cardPackId = cardPacks.id
@@ -603,11 +603,16 @@ WHERE cards.id = $id`;
 
   const result = db.prepare(`${sql}`).get({ id });
 
+  // @ts-ignore
+  result.parentIds = `${result.parentIds}`
+    ?.split(',')
+    ?.map((item) => Number(item));
+
   // 将卡片详情字符串解析成对象数组
   // @ts-ignore
   result.cardDetails = result.cardDetails?.split(';').map((detail) => {
     const [cardDetailsId, evolvedStage, attack, health, description] =
-      detail.split(',');
+      detail.split('||,');
     return {
       id: Number(cardDetailsId),
       evolvedStage: Number(evolvedStage),

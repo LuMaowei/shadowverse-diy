@@ -73,6 +73,7 @@ export default function CardSymd(props: {
     <div className="card-frame-number-content">
       <InputNumber
         autoFocus
+        controls={false}
         precision={0}
         min={0}
         max={99}

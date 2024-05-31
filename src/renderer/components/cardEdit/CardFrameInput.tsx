@@ -4,11 +4,10 @@ import { useState } from 'react';
 export default function CardFrameInput(props: {
   value?: string;
   onChange?: (value: string | null) => void;
-  prefix?: string;
 }) {
-  const { value, onChange, prefix } = props;
+  const { value, onChange } = props;
   const [disabled, setDisabled] = useState(true);
-  const fontSize = (value?.length || 0) <= 5 ? 32 : 40 - (value?.length || 0);
+  const fontSize = (value?.length || 0) <= 5 ? 32 : 32 - (value?.length || 0);
 
   if (disabled) {
     return (
@@ -17,7 +16,6 @@ export default function CardFrameInput(props: {
         style={{ fontSize }}
         onClick={() => setDisabled(false)}
       >
-        {prefix ? `${prefix}: ` : ''}
         {value}
       </div>
     );
