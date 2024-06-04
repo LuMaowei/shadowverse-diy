@@ -66,10 +66,6 @@ header {
     width: 380px;
   }
 
-  .card-frame-background {
-    cursor: pointer;
-  }
-
   .card-frame-number-container {
     position: absolute;
     width: 104px;
@@ -162,15 +158,7 @@ header {
     cursor: pointer;
   }
 
-  .card-details-unevolved {
-
-  }
-
-  .card-details-follower-unevolved {
-    position: relative;
-  }
-
-  .crad-details-follower-evolved {
+  .card-details {
     position: relative;
   }
 
@@ -235,9 +223,11 @@ header {
 }
 
 .w-e-text-container {
+  background-image: url("../../assets/resources/cardContent/underLine.png");
   background-color: unset !important;
   color: unset !important;
-  background-image: url("../../assets/resources/cardContent/underLine.png");
+  font-size: 18px;
+  word-break: break-all;
 }
 
 .w-e-text-container [data-slate-editor] {

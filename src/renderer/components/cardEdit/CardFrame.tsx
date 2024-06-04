@@ -38,7 +38,7 @@ export default function CardFrame(props: { frame?: string; gem?: string }) {
           }))}
         />
       </Form.Item>
-      <img className="card-frame-background" src={frame} alt="" />
+      <img src={frame} alt="" />
       <img className="absolute left-[180px] bottom-[44px]" src={gem} alt="" />
       {!!isReborn && (
         <img

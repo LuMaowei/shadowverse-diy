@@ -29,7 +29,7 @@ export default function CardDescription(props: CardDescriptionProps) {
       const entryHeight = entry.target.clientHeight;
       const entryTextareaHeight = entry.target.children[1].clientHeight;
       const resultHeight =
-        entryHeight > originalSize.descriptionHeight + 27
+        entryHeight > originalSize.descriptionHeight + originalSize.lineHeight
           ? entryHeight + originalSize.fillHeight
           : entryHeight;
       let resultScale = resultHeight / originalSize.descriptionHeight;
@@ -80,11 +80,9 @@ export default function CardDescription(props: CardDescriptionProps) {
             </>
           )}
         </div>
-        <div className="card-details-follower-unevolved">
-          <Form.Item noStyle name="unevolvedDescription">
-            <CardDetailsTextArea />
-          </Form.Item>
-        </div>
+        <Form.Item noStyle name="unevolvedDescription">
+          <CardDetailsTextArea />
+        </Form.Item>
         {type === 'follower' && (
           <div
             style={{
@@ -104,11 +102,9 @@ export default function CardDescription(props: CardDescriptionProps) {
                 </Form.Item>
               </div>
             </div>
-            <div className="card-details-follower-unevolved">
-              <Form.Item noStyle name="evolvedDescription">
-                <CardDetailsTextArea />
-              </Form.Item>
-            </div>
+            <Form.Item noStyle name="evolvedDescription">
+              <CardDetailsTextArea />
+            </Form.Item>
           </div>
         )}
       </div>

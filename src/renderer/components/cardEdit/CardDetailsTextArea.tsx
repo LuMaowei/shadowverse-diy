@@ -2,7 +2,7 @@ import { Editor } from '@wangeditor/editor-for-react';
 import { IDomEditor } from '@wangeditor/editor';
 import React, { useEffect, useRef } from 'react';
 import AbilityInput, { AbilityInputRef } from './AbilityInput';
-import { jsonStringify } from '../../utils';
+import { jsonStringify } from '../../utils/utils';
 
 interface CardDetailsTextAreaProps {
   value?: string;
@@ -64,7 +64,7 @@ function CardDetailsTextArea(props: CardDetailsTextAreaProps) {
   };
 
   return (
-    <>
+    <div className="card-details">
       <Editor
         onCreated={handleCreate}
         onChange={handleChange}
@@ -78,7 +78,7 @@ function CardDetailsTextArea(props: CardDetailsTextAreaProps) {
         editor={editorRef.current}
         onSelect={onAbilitySelect}
       />
-    </>
+    </div>
   );
 }
 

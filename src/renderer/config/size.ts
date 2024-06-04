@@ -5,6 +5,7 @@ const originalSize = {
   contentHeight: 478,
   descriptionHeight: 418,
   fillHeight: 40,
+  lineHeight: 27,
 };
 
 export default originalSize;

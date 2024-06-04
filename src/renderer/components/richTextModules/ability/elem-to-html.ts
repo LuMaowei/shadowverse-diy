@@ -1,6 +1,6 @@
 import { SlateElement } from '@wangeditor/editor';
 import { AbilityElement } from './custom-types';
-import { jsonParse } from '../../../utils';
+import { jsonParse } from '../../../utils/utils';
 
 function abilityToHtml(elem: SlateElement): string {
   const { info } = elem as AbilityElement;

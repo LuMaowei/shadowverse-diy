@@ -1,21 +1,72 @@
-let currRenderDom = null;
-let currelRectification = '';
-let currelRectificationLevel = '';
-let currelRectificationIsKeepRatio = '';
-let resizeListener = null;
-let timer = null;
-let currScale = 1;
-let isElRectification = false;
-const autofit = {
+export interface IgnoreOption {
+  el: string;
+  height?: string;
+  width?: string;
+  scale?: number;
+  fontSize?: number;
+}
+
+export interface AutofitOption {
+  el?: string;
+  dw?: number;
+  dh?: number;
+  resize?: boolean;
+  ignore?: (IgnoreOption | string)[];
+  transition?: number;
+  delay?: number;
+  limit?: number;
+}
+
+export interface KeepfitOption {
+  dw: number;
+  dh: number;
+  dom: HTMLElement;
+  ignore: (IgnoreOption | string)[];
+  limit: number;
+  currWidth?: number;
+  currHeight?: number;
+}
+
+export interface ElRectificationOption {
+  el: string;
+  isKeepRatio?: boolean;
+  level?: number;
+  offsetWidth?: number;
+  offsetHeight?: number;
+}
+
+export interface Autofit {
+  isAutofitRunnig: boolean;
+
+  /**
+   * - el（可选）：渲染的元素，默认是 "body"
+   * - dw（可选）：设计稿的宽度，默认是 1920
+   * - dh（可选）：设计稿的高度，默认是 1080
+   * - resize（可选）：是否监听resize事件，默认是 true
+   * - ignore(可选)：忽略缩放的元素（该元素将反向缩放），参数见readme.md
+   * - transition（可选）：过渡时间，默认是 0
+   * - delay（可选）：延迟，默认是 0
+   */
+  init(options: AutofitOption): void;
+
+  off(id?: string): void;
+}
+
+let currRenderDom: string | null = null;
+let currelRectification: string = '';
+let currelRectificationLevel: number = 1;
+let currelRectificationIsKeepRatio: boolean = true;
+let resizeListener: EventListenerOrEventListenerObject;
+let timer: NodeJS.Timeout;
+let currScale: number = 1;
+let isElRectification: boolean = false;
+const autofit: Autofit = {
   isAutofitRunnig: false,
-  init(options = {}, isShowInitTip = true) {
-    if (isShowInitTip) {
-      console.log(`autofit.js is running`);
-    }
+  init(options = {}) {
     const {
       dw = 1920,
       dh = 1080,
-      el = typeof options === 'string' ? options : 'body',
+      el = 'body',
       resize = true,
       ignore = [],
       transition = 'none',
@@ -23,9 +74,8 @@ const autofit = {
       limit = 0,
     } = options;
     currRenderDom = el;
-    const dom = document.querySelector(el);
+    const dom = document.querySelector(el) as HTMLElement;
     if (!dom) {
-      console.error(`autofit: '${el}' is not exist`);
       return;
     }
     const style = document.createElement('style');
@@ -35,33 +85,33 @@ const autofit = {
     style.id = 'autofit-style';
     ignoreStyle.id = 'ignoreStyle';
     style.innerHTML = `body {overflow: hidden;}`;
-    const bodyEl = document.querySelector('body');
+    const bodyEl = document.querySelector('body')!;
     bodyEl.appendChild(style);
     bodyEl.appendChild(ignoreStyle);
     dom.style.height = `${dh}px`;
     dom.style.width = `${dw}px`;
     dom.style.transformOrigin = `0 0`;
     dom.style.overflow = 'hidden';
-    keepFit(dw, dh, dom, ignore, limit);
+    keepFit({ dw, dh, dom, ignore, limit });
     resizeListener = () => {
       clearTimeout(timer);
       if (delay != 0)
         timer = setTimeout(() => {
-          keepFit(dw, dh, dom, ignore, limit);
+          keepFit({ dw, dh, dom, ignore, limit });
           isElRectification &&
             elRectification({
-              currelRectification,
-              currelRectificationIsKeepRatio,
-              currelRectificationLevel,
+              el: currelRectification,
+              isKeepRatio: currelRectificationIsKeepRatio,
+              level: currelRectificationLevel,
             });
         }, delay);
       else {
-        keepFit(dw, dh, dom, ignore, limit);
+        keepFit({ dw, dh, dom, ignore, limit });
         isElRectification &&
           elRectification({
-            currelRectification,
-            currelRectificationIsKeepRatio,
-            currelRectificationLevel,
+            el: currelRectification,
+            isKeepRatio: currelRectificationIsKeepRatio,
+            level: currelRectificationLevel,
           });
       }
     };
@@ -75,13 +125,17 @@ const autofit = {
     try {
       isElRectification = false;
       window.removeEventListener('resize', resizeListener);
-      document.querySelector('#autofit-style').remove();
+      const autofitStyleDom = document.querySelector(
+        '#autofit-style',
+      ) as HTMLElement;
+      autofitStyleDom.remove();
       const ignoreStyleDOM = document.querySelector('#ignoreStyle');
       ignoreStyleDOM && ignoreStyleDOM.remove();
-      document.querySelector(currRenderDom || el).style = '';
+      const currDom = document.querySelector(currRenderDom || el);
+      // @ts-ignore
+      currDom.style = '';
       isElRectification && offelRectification();
     } catch (error) {
-      console.error(`autofit: Failed to remove normally`, error);
       this.isAutofitRunnig = false;
     }
     this.isAutofitRunnig && console.log(`autofit.js is off`);
@@ -94,27 +148,26 @@ function elRectification({
   level = 1,
   offsetWidth = 0,
   offsetHeight = 0,
-}) {
-  if (!autofit.isAutofitRunnig) {
-    console.error('autofit.js：autofit has not been initialized yet');
-  }
-  !el && console.error(`autofit.js：bad selector: ${el}`);
+}: ElRectificationOption) {
   currelRectification = el;
   currelRectificationLevel = level;
   currelRectificationIsKeepRatio = isKeepRatio;
-  const currEl = document.querySelectorAll(el);
+  const currEl = document.querySelectorAll(el) as NodeListOf<HTMLElement>;
   if (currEl.length == 0) {
-    console.error('autofit.js：elRectification found no element');
     return;
   }
   for (const item of currEl) {
     const rectification = currScale == 1 ? 1 : currScale * level;
     if (!isElRectification) {
+      // @ts-ignore
       item.originalWidth = item.clientWidth;
+      // @ts-ignore
       item.originalHeight = item.clientHeight;
     }
     if (isKeepRatio) {
+      // @ts-ignore
       item.style.width = `${item.originalWidth * rectification}px`;
+      // @ts-ignore
       item.style.height = `${item.originalHeight * rectification}px`;
     } else {
       item.style.width = `calc(${100 * rectification}% - ${offsetWidth}px)`;
@@ -128,37 +181,59 @@ function elRectification({
 
 function offelRectification() {
   if (!currelRectification) return;
-  for (const item of document.querySelectorAll(currelRectification)) {
+  for (const item of document.querySelectorAll(
+    currelRectification,
+  ) as NodeListOf<HTMLElement>) {
     item.style.width = ``;
     item.style.height = ``;
     item.style.transform = ``;
   }
 }
 
-function keepFit(dw, dh, dom, ignore, limit, currWidth, currHeight) {
+function keepFit({
+  dw,
+  dh,
+  dom,
+  ignore,
+  limit,
+  currWidth,
+  currHeight,
+}: KeepfitOption) {
   const clientHeight = currHeight || document.documentElement.clientHeight;
   const clientWidth = currWidth || document.documentElement.clientWidth;
   currScale =
     clientWidth / clientHeight < dw / dh ? clientWidth / dw : clientHeight / dh;
-  currScale = Math.abs(1 - currScale) > limit ? currScale.toFixed(2) : 1;
+  currScale =
+    Math.abs(1 - currScale) > limit ? Number(currScale.toFixed(2)) : 1;
   const height = Math.round(clientHeight / currScale);
   const width = Math.round(clientWidth / currScale);
   dom.style.height = `${height}px`;
   dom.style.width = `${width}px`;
   dom.style.transform = `scale(${currScale})`;
-  const ignoreStyleDOM = document.querySelector('#ignoreStyle');
+  const ignoreStyleDOM = document.querySelector('#ignoreStyle') as HTMLElement;
   ignoreStyleDOM.innerHTML = '';
   for (const item of ignore) {
-    let itemEl = item.el || item.dom;
-    typeof item === 'string' && (itemEl = item);
+    let itemEl: string;
+    let itemScale;
+    let itemFontSize;
+    let itemWidth;
+    let itemHeight;
+    if (typeof item === 'string') {
+      itemEl = item;
+    } else {
+      itemEl = item.el;
+      itemScale = item.scale;
+      itemFontSize = item.fontSize;
+      itemWidth = item.width;
+      itemHeight = item.height;
+    }
     if (!itemEl) {
-      console.error(`autofit: bad selector: ${itemEl}`);
       continue;
     }
-    const realScale = item.scale ? item.scale : 1 / currScale;
-    const realFontSize = realScale != currScale ? item.fontSize : 'autofit';
-    const realWidth = realScale != currScale ? item.width : 'autofit';
-    const realHeight = realScale != currScale ? item.height : 'autofit';
+    const realScale = itemScale || 1 / currScale;
+    const realFontSize = realScale != currScale ? itemFontSize : 'autofit';
+    const realWidth = realScale != currScale ? itemWidth : 'autofit';
+    const realHeight = realScale != currScale ? itemHeight : 'autofit';
     const regex = new RegExp(`${itemEl}(\x20|{)`, 'gm');
     const isIgnored = regex.test(ignoreStyleDOM.innerHTML);
     if (isIgnored) {

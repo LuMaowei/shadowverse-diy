@@ -1,7 +1,7 @@
 import { h, VNode } from 'snabbdom';
 import { SlateElement } from '@wangeditor/editor';
 import { AbilityElement } from './custom-types';
-import { jsonParse } from '../../../utils';
+import { jsonParse } from '../../../utils/utils';
 
 function renderAbility(elem: SlateElement): VNode {
   const { info } = elem as AbilityElement;

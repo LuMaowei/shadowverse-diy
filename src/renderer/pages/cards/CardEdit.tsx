@@ -10,10 +10,10 @@ import framesMap from '../../config/types';
 import CardFooter from '../../components/cardEdit/CardFooter';
 import DataTableSelect from '../../components/DataTableSelect';
 import NumberedSwitch from '../../components/NumberedSwitch';
-import autofit, {
-  elRectification,
-  keepFit,
-} from '../../components/autofit/autofit';
+import autofit, { elRectification, keepFit } from '../../utils/autofit';
+import originalSize from '../../config/size';
+
+const elId = 'sv-card';
 
 export default function CardEdit(): JSX.Element {
   const { id } = useParams();
@@ -32,9 +32,9 @@ export default function CardEdit(): JSX.Element {
 
   useEffect(() => {
     autofit.init({
-      el: '#sv-card',
-      dw: 1270,
-      dh: 715,
+      el: `#${elId}`,
+      dw: originalSize.width,
+      dh: originalSize.height,
       resize: false,
     });
     return () => {
@@ -43,17 +43,17 @@ export default function CardEdit(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    keepFit(
-      1270,
-      715,
-      document.querySelector('#sv-card'),
-      [],
-      0,
-      1270 * scale,
-      715 * scale,
-    );
+    keepFit({
+      dw: originalSize.width,
+      dh: originalSize.height,
+      dom: document.querySelector(`#${elId}`) as HTMLElement,
+      ignore: [],
+      limit: 0,
+      currWidth: originalSize.width * scale,
+      currHeight: originalSize.height * scale,
+    });
     elRectification({
-      el: '.card-details-follower-unevolved',
+      el: '.card-details',
       isKeepRatio: false,
     });
   }, [scale]);
@@ -145,73 +145,71 @@ export default function CardEdit(): JSX.Element {
   };
 
   return (
-    <div>
-      <Form
-        form={form}
-        initialValues={{
-          classes: 'forest',
-          type: 'follower',
-          rarity: 'bronze',
+    <Form
+      form={form}
+      initialValues={{
+        classes: 'forest',
+        type: 'follower',
+        rarity: 'bronze',
+      }}
+    >
+      <Flex id="toolbar" gap={16}>
+        <Form.Item hidden name="id">
+          <InputNumber />
+        </Form.Item>
+        <Form.Item hidden name="unevolvedId">
+          <InputNumber />
+        </Form.Item>
+        <Form.Item hidden name="evolvedId">
+          <InputNumber />
+        </Form.Item>
+        <Form.Item name="cardPackId" label="所属卡包">
+          <DataTableSelect className="!w-[160px]" dataTable="cardPack" />
+        </Form.Item>
+        <Form.Item name="isReborn" label="复生卡">
+          <NumberedSwitch />
+        </Form.Item>
+        <Form.Item name="isToken" label="特殊卡">
+          <NumberedSwitch />
+        </Form.Item>
+        {isToken ? (
+          <Form.Item name="parentIds" label="所属卡片">
+            <DataTableSelect
+              className="!w-[160px]"
+              dataTable="card"
+              mode="multiple"
+              handleOptions={(cards) =>
+                cards.filter((item) => `${item.id}` !== `${id}`)
+              }
+            />
+          </Form.Item>
+        ) : null}
+        <Form.Item name="showIllustrator" label="显示绘师">
+          <NumberedSwitch />
+        </Form.Item>
+        <Button onClick={onBack}>取消</Button>
+        <Button type="primary" onClick={saveCardInfo}>
+          保存
+        </Button>
+        <Button onClick={onExport}>导出</Button>
+      </Flex>
+      <div
+        id={elId}
+        ref={svCardRef}
+        className="card-container"
+        style={{
+          backgroundImage: `url(${background})`,
         }}
       >
-        <Flex id="toolbar" gap={16}>
-          <Form.Item hidden name="id">
-            <InputNumber />
-          </Form.Item>
-          <Form.Item hidden name="unevolvedId">
-            <InputNumber />
-          </Form.Item>
-          <Form.Item hidden name="evolvedId">
-            <InputNumber />
-          </Form.Item>
-          <Form.Item name="cardPackId" label="所属卡包">
-            <DataTableSelect className="!w-[160px]" dataTable="cardPack" />
-          </Form.Item>
-          <Form.Item name="isReborn" label="复生卡">
-            <NumberedSwitch />
-          </Form.Item>
-          <Form.Item name="isToken" label="特殊卡">
-            <NumberedSwitch />
-          </Form.Item>
-          {isToken ? (
-            <Form.Item name="parentIds" label="所属卡片">
-              <DataTableSelect
-                className="!w-[160px]"
-                dataTable="card"
-                mode="multiple"
-                handleOptions={(cards) =>
-                  cards.filter((item) => `${item.id}` !== `${id}`)
-                }
-              />
-            </Form.Item>
-          ) : null}
-          <Form.Item name="showIllustrator" label="显示绘师">
-            <NumberedSwitch />
-          </Form.Item>
-          <Button onClick={onBack}>取消</Button>
-          <Button type="primary" onClick={saveCardInfo}>
-            保存
-          </Button>
-          <Button onClick={onExport}>导出</Button>
+        <div className="card-container-mask" />
+        <CardHead emblem={emblem} />
+        <div className="card-main-border" />
+        <Flex className="card-content" justify="space-between" align="center">
+          <CardFrame frame={frame} gem={gem} />
+          <CardDescription scale={scale} onSizeChange={setScale} />
         </Flex>
-        <div
-          id="sv-card"
-          ref={svCardRef}
-          className="card-container"
-          style={{
-            backgroundImage: `url(${background})`,
-          }}
-        >
-          <div className="card-container-mask" />
-          <CardHead emblem={emblem} />
-          <div className="card-main-border" />
-          <Flex className="card-content" justify="space-between" align="center">
-            <CardFrame frame={frame} gem={gem} />
-            <CardDescription scale={scale} onSizeChange={setScale} />
-          </Flex>
-          <CardFooter />
-        </div>
-      </Form>
-    </div>
+        <CardFooter />
+      </div>
+    </Form>
   );
 }
