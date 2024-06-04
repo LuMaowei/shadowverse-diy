@@ -1,9 +1,8 @@
 import { Form } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import pick from 'lodash/pick';
 import CardDetailsInputNumber from './CardDetailsInputNumber';
 import CardDetailsTextArea from './CardDetailsTextArea';
-import { originalSize, ratio } from '../../config/size';
+import originalSize from '../../config/size';
 
 interface CardDescriptionProps {
   scale: number;
@@ -18,43 +17,35 @@ const attrLabel: { [key: string]: string } = {
 
 export default function CardDescription(props: CardDescriptionProps) {
   const { scale, onSizeChange } = props;
+  const [textareaHeight, setTextareaHeight] = useState<number>(0);
   const holderRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [holderSize, setHolderSize] = useState<{
-    contentHeight: number;
-    contentWidth: number;
-  }>(pick(originalSize, ['contentWidth', 'contentHeight']));
   const formInstance = Form.useFormInstance();
   const type = Form.useWatch('type', formInstance);
 
   useEffect(() => {
-    const temp = holderSize.contentHeight / originalSize.contentHeight;
-    onSizeChange(temp * 0.9 < 1 ? 1 : temp);
-  }, [holderSize.contentHeight]);
-
-  useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
-      const entryHeight = entry.contentRect.height + originalSize.fillHeight;
-      const resultWidth = ratio * entryHeight;
-      setHolderSize({
-        contentWidth:
-          resultWidth < originalSize.contentWidth
-            ? originalSize.contentWidth
-            : resultWidth,
-        contentHeight:
-          entryHeight < originalSize.contentHeight
-            ? originalSize.contentHeight
-            : entryHeight,
-      });
+      const entryHeight = entry.target.clientHeight;
+      const entryTextareaHeight = entry.target.children[1].clientHeight;
+      const resultHeight =
+        entryHeight > originalSize.descriptionHeight + 27
+          ? entryHeight + originalSize.fillHeight
+          : entryHeight;
+      let resultScale = resultHeight / originalSize.descriptionHeight;
+      if (resultScale < 1) {
+        resultScale = 1;
+      } else if (resultScale > 1.5) {
+        resultScale = 1.5;
+      }
+      onSizeChange(resultScale);
+      setTextareaHeight(entryTextareaHeight);
     });
 
-    // 开始观察
     if (contentRef.current) {
       resizeObserver.observe(contentRef.current);
     }
 
-    // 清理函数
     return () => {
       if (contentRef.current) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,14 +55,7 @@ export default function CardDescription(props: CardDescriptionProps) {
   }, []);
 
   return (
-    <div
-      ref={holderRef}
-      className="card-description-container"
-      style={{
-        width: holderSize.contentWidth,
-        height: holderSize.contentHeight,
-      }}
-    >
+    <div ref={holderRef} className="card-description-container">
       <div ref={contentRef}>
         <div
           className={
@@ -79,39 +63,16 @@ export default function CardDescription(props: CardDescriptionProps) {
               ? 'card-description-follower-attr'
               : 'card-description-attr'
           }
-          style={{ height: scale * originalSize.attrHeight }}
         >
-          <span
-            className="absolute"
-            style={{
-              bottom: scale * 18,
-              fontSize: scale * originalSize.attrFontSize,
-            }}
-          >
-            {attrLabel[type]}
-          </span>
+          <span className="absolute bottom-[18px]">{attrLabel[type]}</span>
           {type === 'follower' && (
             <>
-              <div
-                className="card-details-attr"
-                style={{
-                  right: scale * 140,
-                  bottom: scale * 18,
-                  fontSize: scale * originalSize.attrFontSize,
-                }}
-              >
+              <div className="card-details-attr right-[140px] bottom-[18px]">
                 <Form.Item noStyle name="unevolvedAttack" initialValue={0}>
                   <CardDetailsInputNumber />
                 </Form.Item>
               </div>
-              <div
-                className="card-details-attr"
-                style={{
-                  right: scale * 40,
-                  bottom: scale * 18,
-                  fontSize: scale * originalSize.attrFontSize,
-                }}
-              >
+              <div className="card-details-attr right-[40px] bottom-[18px]">
                 <Form.Item noStyle name="unevolvedHealth" initialValue={0}>
                   <CardDetailsInputNumber />
                 </Form.Item>
@@ -119,71 +80,36 @@ export default function CardDescription(props: CardDescriptionProps) {
             </>
           )}
         </div>
-        <div
-          className="crad-details-follower-unevolved"
-          style={{
-            width: `calc(100% - ${
-              originalSize.detailsUnderlineWidth * scale
-            }px)`,
-          }}
-        >
+        <div className="card-details-follower-unevolved">
           <Form.Item noStyle name="unevolvedDescription">
             <CardDetailsTextArea />
           </Form.Item>
         </div>
         {type === 'follower' && (
-          <>
-            <div
-              className="card-description-follower-attr"
-              style={{ height: scale * originalSize.attrHeight }}
-            >
-              <span
-                className="absolute"
-                style={{
-                  bottom: scale * 18,
-                  fontSize: scale * originalSize.attrFontSize,
-                }}
-              >
-                进化后
-              </span>
-              <div
-                className="card-details-attr"
-                style={{
-                  right: scale * 140,
-                  bottom: scale * 18,
-                  fontSize: scale * originalSize.attrFontSize,
-                }}
-              >
+          <div
+            style={{
+              transform: `translateY(${textareaHeight * (1 / scale - 1)}px)`,
+            }}
+          >
+            <div className="card-description-follower-attr">
+              <span className="absolute bottom-[18px]">进化后</span>
+              <div className="card-details-attr right-[140px] bottom-[18px]">
                 <Form.Item noStyle name="evolvedAttack" initialValue={0}>
                   <CardDetailsInputNumber />
                 </Form.Item>
               </div>
-              <div
-                className="card-details-attr"
-                style={{
-                  right: scale * 40,
-                  bottom: scale * 18,
-                  fontSize: scale * originalSize.attrFontSize,
-                }}
-              >
+              <div className="card-details-attr right-[40px] bottom-[18px]">
                 <Form.Item noStyle name="evolvedHealth" initialValue={0}>
                   <CardDetailsInputNumber />
                 </Form.Item>
               </div>
             </div>
-            <div
-              className="crad-details-follower-unevolved"
-              style={{
-                width: `calc(100% - ${
-                  originalSize.detailsUnderlineWidth * scale
-                }px)`,
-              }}
-            >
+            <div className="card-details-follower-unevolved">
               <Form.Item noStyle name="evolvedDescription">
                 <CardDetailsTextArea />
               </Form.Item>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

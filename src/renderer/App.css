@@ -20,6 +20,7 @@ header {
   background-size: cover;
   width: 1270px;
   height: 715px;
+  padding: 36px 72px 12px 72px;
   overflow: hidden;
   position: relative;
   display: flex;
@@ -30,7 +31,6 @@ header {
     font-size: 24px;
     position: relative;
     z-index: 1;
-    transform-origin: center right;
 
     td {
       padding: 0 4px;
@@ -44,6 +44,8 @@ header {
     background-repeat: no-repeat;
     position: relative;
     z-index: 1;
+    height: 12px;
+    margin: 8px 0;
   }
 
   .card-content {
@@ -62,7 +64,6 @@ header {
     position: relative;
     height: 498px;
     width: 380px;
-    transform-origin: center left;
   }
 
   .card-frame-background {
@@ -88,9 +89,9 @@ header {
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
-    padding-top: 24px;
     width: 680px;
     height: 478px;
+    padding: 24px 32px 42px 32px;
   }
 
   .card-description-attr {
@@ -102,7 +103,7 @@ header {
     height: 64px;
     font-size: 24px;
     position: relative;
-    margin-bottom: -12px;
+    margin: 0 -32px -12px -32px;
   }
 
   .card-description-follower-attr {
@@ -114,7 +115,7 @@ header {
     height: 64px;
     font-size: 24px;
     position: relative;
-    margin-bottom: -12px;
+    margin: 0 -32px -12px -32px;
   }
 
   .card-frame-name-container {
@@ -165,12 +166,8 @@ header {
 
   }
 
-  .crad-details-follower-unevolved {
-    background-image: url("../../assets/resources/cardContent/underLine.png");
-    font-size: 16px;
+  .card-details-follower-unevolved {
     position: relative;
-    margin: 0 auto;
-    line-height: 27px;
   }
 
   .crad-details-follower-evolved {
@@ -240,6 +237,7 @@ header {
 .w-e-text-container {
   background-color: unset !important;
   color: unset !important;
+  background-image: url("../../assets/resources/cardContent/underLine.png");
 }
 
 .w-e-text-container [data-slate-editor] {

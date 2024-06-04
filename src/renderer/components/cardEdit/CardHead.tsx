@@ -2,19 +2,14 @@ import { Flex, Form, Select } from 'antd';
 import DataTableSelect from '../DataTableSelect';
 import classesMap, { classesList } from '../../config/classes';
 
-export default function CardHead(props: { emblem?: string; scale: number }) {
-  const { emblem, scale } = props;
+export default function CardHead(props: { emblem?: string }) {
+  const { emblem } = props;
   const formInstance = Form.useFormInstance();
   const name = Form.useWatch('name', formInstance);
   const fontSize =
     (name?.length || 0) <= 5 ? 32 : Math.max(40 - (name?.length || 0), 16);
   return (
-    <Flex
-      className="card-head"
-      justify="space-between"
-      gap={8}
-      style={{ transform: `scale(${scale})` }}
-    >
+    <Flex className="card-head" justify="space-between" gap={8}>
       <table>
         <tbody>
           <tr className="h-[37px]" />

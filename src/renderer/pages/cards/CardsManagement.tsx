@@ -101,7 +101,6 @@ export default function CardsManagement() {
         const res = await window.Context.sqlClient.getCards(
           params as DB.Cards & { traitIds?: number[] },
         );
-        console.log(res);
         return { success: true, data: res };
       }}
       options={false}

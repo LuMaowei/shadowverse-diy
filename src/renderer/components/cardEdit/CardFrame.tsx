@@ -10,21 +10,14 @@ import {
   typesList,
 } from '../../config/types';
 
-export default function CardFrame(props: {
-  frame?: string;
-  gem?: string;
-  scale: number;
-}) {
-  const { frame, gem, scale } = props;
+export default function CardFrame(props: { frame?: string; gem?: string }) {
+  const { frame, gem } = props;
   const formInstance = Form.useFormInstance();
   const type = Form.useWatch('type', formInstance);
   const isReborn = Form.useWatch('isReborn', formInstance);
 
   return (
-    <div
-      className="card-frame-container"
-      style={{ transform: `scale(${scale})` }}
-    >
+    <div className="card-frame-container">
       <Form.Item noStyle name="rarity">
         <Select
           className="card-frame-select top-[16px] left-[144px]"

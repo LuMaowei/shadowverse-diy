@@ -8,9 +8,12 @@ import CardHead from '../../components/cardEdit/CardHead';
 import classesMap from '../../config/classes';
 import framesMap from '../../config/types';
 import CardFooter from '../../components/cardEdit/CardFooter';
-import { originalSize } from '../../config/size';
 import DataTableSelect from '../../components/DataTableSelect';
 import NumberedSwitch from '../../components/NumberedSwitch';
+import autofit, {
+  elRectification,
+  keepFit,
+} from '../../components/autofit/autofit';
 
 export default function CardEdit(): JSX.Element {
   const { id } = useParams();
@@ -27,9 +30,36 @@ export default function CardEdit(): JSX.Element {
   const { frame } = framesMap[`${type}_${rarity}`] || {};
   const { gem, emblem, background } = classesMap[classes] || {};
 
+  useEffect(() => {
+    autofit.init({
+      el: '#sv-card',
+      dw: 1270,
+      dh: 715,
+      resize: false,
+    });
+    return () => {
+      autofit.off();
+    };
+  }, []);
+
+  useEffect(() => {
+    keepFit(
+      1270,
+      715,
+      document.querySelector('#sv-card'),
+      [],
+      0,
+      1270 * scale,
+      715 * scale,
+    );
+    elRectification({
+      el: '.card-details-follower-unevolved',
+      isKeepRatio: false,
+    });
+  }, [scale]);
+
   const fetchCardInfo = () => {
     window.Context.sqlClient.getCard({ id: Number(id) }).then((res) => {
-      console.log(res);
       const { cardDetails, ...rest } = res;
       const result: any = {};
       cardDetails?.forEach((item: any) => {
@@ -45,7 +75,6 @@ export default function CardEdit(): JSX.Element {
           result.evolvedDescription = item.description;
         }
       });
-      console.log({ ...rest, ...result });
       form.setFieldsValue({
         ...rest,
         ...result,
@@ -92,7 +121,6 @@ export default function CardEdit(): JSX.Element {
       type: typeValue,
       cardDetails,
     };
-    console.log(params);
     window.Context.sqlClient.setCard(params);
     message.success('保存成功');
   };
@@ -167,36 +195,21 @@ export default function CardEdit(): JSX.Element {
           <Button onClick={onExport}>导出</Button>
         </Flex>
         <div
+          id="sv-card"
           ref={svCardRef}
           className="card-container"
           style={{
             backgroundImage: `url(${background})`,
-            width: scale * originalSize.width,
-            height: scale * originalSize.height,
-            padding: `${scale * originalSize.paddingTop}px ${
-              scale * originalSize.paddingX
-            }px ${scale * originalSize.paddingBottom}px ${
-              scale * originalSize.paddingX
-            }px`,
           }}
         >
           <div className="card-container-mask" />
-          <CardHead emblem={emblem} scale={scale} />
-          <div
-            className="card-main-border"
-            style={{
-              height: scale * originalSize.mainBorderHeight,
-              margin: `${
-                2 * scale * originalSize.mainBorderMargin -
-                originalSize.mainBorderMargin
-              }px 0`,
-            }}
-          />
+          <CardHead emblem={emblem} />
+          <div className="card-main-border" />
           <Flex className="card-content" justify="space-between" align="center">
-            <CardFrame frame={frame} gem={gem} scale={scale} />
+            <CardFrame frame={frame} gem={gem} />
             <CardDescription scale={scale} onSizeChange={setScale} />
           </Flex>
-          <CardFooter scale={scale} />
+          <CardFooter />
         </div>
       </Form>
     </div>

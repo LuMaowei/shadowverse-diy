@@ -1,19 +1,13 @@
 import { Flex, Form } from 'antd';
-import { originalSize } from '../../config/size';
 import IllustratorInput from './IllustratorInput';
 
-export default function CardFooter(props: { scale: number }) {
-  const { scale } = props;
+export default function CardFooter() {
   const formInstance = Form.useFormInstance();
   const isToken = Form.useWatch('isToken', formInstance);
   const showIllustrator = Form.useWatch('showIllustrator', formInstance);
 
   return (
-    <Flex
-      className="card-footer"
-      vertical
-      style={{ fontSize: scale * originalSize.footerFontSize }}
-    >
+    <Flex className="card-footer" vertical>
       <Flex justify="space-between">
         <div>※卡片能力为开发中内容。</div>
         {showIllustrator ? (

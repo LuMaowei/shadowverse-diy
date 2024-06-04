@@ -16,6 +16,7 @@ function renderAbility(elem: SlateElement): VNode {
       style: {
         display: 'inline-block',
         color: '#f5c05e',
+        marginRight: '0.5rem',
       },
     },
     label,
