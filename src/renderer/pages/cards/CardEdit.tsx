@@ -121,7 +121,9 @@ export default function CardEdit(): JSX.Element {
       type: typeValue,
       cardDetails,
     };
-    window.Context.sqlClient.setCard(params);
+    window.Context.sqlClient.setCard(params).then((res) => {
+      navigate(`/cards/edit/${res}`, { replace: true });
+    });
     message.success('保存成功');
   };
 

@@ -20,7 +20,7 @@ export type DataInterface = {
       cardDetails?: (DB.CardDetails & { abilityIds?: number[] })[];
       traitIds?: number[];
     },
-  ) => void;
+  ) => Promise<number | bigint | undefined>;
   deleteCard: (params: DB.Cards) => void;
   getCard: (params: DB.Cards) => Promise<any>;
 };

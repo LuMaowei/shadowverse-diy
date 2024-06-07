@@ -451,8 +451,9 @@ function setCard({
   parentIds?: number[];
   cardDetails?: (DB.CardDetails & { abilityIds?: number[] })[];
   traitIds?: number[];
-}): void {
+}): Promise<number | bigint | undefined> {
   const db = getInstance();
+  let cardId: number | bigint | undefined = id;
 
   db.transaction(() => {
     if (id) {
@@ -532,7 +533,7 @@ description = $description WHERE id = $id`,
           tokenIds: tokenIds?.join(','),
           parentIds: parentIds?.join(','),
         });
-
+      cardId = newId;
       // 新增卡片详情
       cardDetails?.forEach((detail) => {
         const { lastInsertRowid: newDetailId } = db
@@ -566,6 +567,8 @@ description = $description WHERE id = $id`,
       });
     }
   })();
+
+  return Promise.resolve(cardId);
 }
 
 // 删除卡片
@@ -591,7 +594,7 @@ async function getCard({ id }: DB.Cards): Promise<any> {
   const sql = `SELECT cards.*,
 cardPacks.id as cardPackId,
 GROUP_CONCAT(DISTINCT traits.id) as traitIds,
-GROUP_CONCAT(cardDetails.id || '||,' || cardDetails.evolvedStage || '||,' || cardDetails.attack || '||,' || cardDetails.health || '||,' || cardDetails.description, ';') as cardDetails,
+GROUP_CONCAT(cardDetails.id || '||,' || cardDetails.evolvedStage || '||,' || cardDetails.attack || '||,' || cardDetails.health || '||,' || IFNULL(cardDetails.description, ''), ';') as cardDetails,
 GROUP_CONCAT(DISTINCT abilities.id) as abilityIds
 FROM cards LEFT JOIN cardDetails ON cards.id = cardDetails.cardId
 LEFT JOIN cardPacks ON cards.cardPackId = cardPacks.id
