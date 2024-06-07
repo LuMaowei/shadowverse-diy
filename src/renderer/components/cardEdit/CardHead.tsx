@@ -6,8 +6,10 @@ export default function CardHead(props: { emblem?: string }) {
   const { emblem } = props;
   const formInstance = Form.useFormInstance();
   const name = Form.useWatch('name', formInstance);
+  const classes = Form.useWatch('classes', formInstance);
   const fontSize =
     (name?.length || 0) <= 5 ? 32 : Math.max(40 - (name?.length || 0), 16);
+
   return (
     <Flex className="card-head" justify="space-between" gap={8}>
       <table>
@@ -23,7 +25,12 @@ export default function CardHead(props: { emblem?: string }) {
           <tr>
             <td>职业</td>
             <td>
-              <img width={37} height={37} src={emblem} alt="" />
+              <img
+                width={classes === classesMap.neutral.key ? 0 : 37}
+                height={37}
+                src={emblem}
+                alt=""
+              />
             </td>
             <td>
               <Form.Item noStyle name="classes">

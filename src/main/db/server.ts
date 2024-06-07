@@ -602,11 +602,11 @@ LEFT JOIN abilities ON cardDetailAbilities.abilityId = abilities.id
 WHERE cards.id = $id`;
 
   const result = db.prepare(`${sql}`).get({ id });
-
   // @ts-ignore
-  result.parentIds = `${result.parentIds}`
-    ?.split(',')
-    ?.map((item) => Number(item));
+  result.parentIds = result.parentIds
+    ? // @ts-ignore
+      `${result.parentIds}`?.split(',')?.map((item) => Number(item))
+    : [];
 
   // 将卡片详情字符串解析成对象数组
   // @ts-ignore
