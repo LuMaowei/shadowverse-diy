@@ -42,6 +42,14 @@ const contextHandler = {
   platform: process.platform,
   NODE_ENV: process.env.NODE_ENV,
   ROOT_PATH: window.location.href.startsWith('file') ? '../../' : '/',
+  store: {
+    get(key: string) {
+      return ipcRenderer.sendSync('electron-store-get', key);
+    },
+    set(key: string, value: any) {
+      return ipcRenderer.send('electron-store-set', key, value);
+    },
+  },
   sqlClient: {
     close,
     removeDB,

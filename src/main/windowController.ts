@@ -1,6 +1,20 @@
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { BrowserWindow, dialog, ipcMain, nativeTheme, shell } from 'electron';
+import Store from 'electron-store';
+
+const store = new Store();
 
 export default function windowController(window: BrowserWindow) {
+  ipcMain.on('electron-store-get', async (event, key: string) => {
+    event.returnValue = store.get(key);
+  });
+  ipcMain.on('electron-store-set', (event, key: string, value: any) => {
+    store.set(key, value);
+  });
+
+  ipcMain.on('dark-mode:change', (event, value) => {
+    nativeTheme.themeSource = value;
+  });
+
   ipcMain.on('window:minimize', () => {
     window.minimize();
   });

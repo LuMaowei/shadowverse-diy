@@ -8,6 +8,10 @@ declare global {
 
     locale: string;
     sqlClient: ClientInterface;
+    store: {
+      get: (key: string) => any;
+      set: (key: string, value: any) => void;
+    };
   }
 
   interface Window {
