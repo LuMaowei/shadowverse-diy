@@ -8,7 +8,7 @@ class ColorMenu extends BaseMenu {
 
   readonly iconSvg = FONT_COLOR_SVG;
 
-  readonly mark = 'cardName';
+  readonly mark = 'color';
 }
 
 export default ColorMenu;
