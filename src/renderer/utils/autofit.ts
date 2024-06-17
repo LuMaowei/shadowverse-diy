@@ -190,6 +190,18 @@ function offelRectification() {
   }
 }
 
+function restoreScale(dom: HTMLElement, invert: boolean) {
+  if (invert) {
+    dom.style.transform = `scale(1)`;
+  } else {
+    dom.style.transform = `scale(${currScale})`;
+  }
+}
+
+function getCurrentScale() {
+  return currScale;
+}
+
 function keepFit({
   dw,
   dh,
@@ -253,5 +265,5 @@ function keepFit({
   }
 }
 
-export { elRectification, keepFit };
+export { elRectification, keepFit, restoreScale, getCurrentScale };
 export default autofit;

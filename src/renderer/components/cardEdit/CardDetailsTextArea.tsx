@@ -31,6 +31,7 @@ function CardDetailsTextArea(props: CardDetailsTextAreaProps) {
 
   const editorConfig = {
     autoFocus: false,
+    hoverbarKeys: { text: { menuKeys: ['cardName'] } },
     EXTEND_CONF: {
       abilityConfig: {
         showModal: showAbilityInput,
@@ -70,7 +71,7 @@ function CardDetailsTextArea(props: CardDetailsTextAreaProps) {
         onChange={handleChange}
         defaultConfig={editorConfig}
         value={value}
-        mode="simple"
+        mode="default"
         style={{ height }}
       />
       <AbilityInput

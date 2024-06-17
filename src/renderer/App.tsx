@@ -10,9 +10,11 @@ import zhCN from 'antd/locale/zh_CN';
 import routes from './config/routes';
 import '@wangeditor/editor/dist/css/style.css';
 import abilityModule from './components/richTextModules/ability';
+import cardName from './components/richTextModules/cardName';
 
 dayjs.locale('zh-cn');
 Boot.registerModule(abilityModule);
+Boot.registerModule(cardName);
 
 export default function App() {
   const element = useRoutes(routes);

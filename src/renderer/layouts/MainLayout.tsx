@@ -143,10 +143,7 @@ export default function MainLayout(): JSX.Element {
           ]}
         >
           <PageContainer>
-            <ProCard
-              className="min-h-[calc(100vh-160px)]"
-              bodyStyle={{ overflow: 'auto' }}
-            >
+            <ProCard className="min-h-[calc(100vh-160px)]">
               <Outlet />
             </ProCard>
           </PageContainer>
