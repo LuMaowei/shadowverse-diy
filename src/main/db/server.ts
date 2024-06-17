@@ -594,7 +594,7 @@ async function getCard({ id }: DB.Cards): Promise<any> {
   const sql = `SELECT cards.*,
 cardPacks.id as cardPackId,
 GROUP_CONCAT(DISTINCT traits.id) as traitIds,
-GROUP_CONCAT(cardDetails.id || '||,' || cardDetails.evolvedStage || '||,' || cardDetails.attack || '||,' || cardDetails.health || '||,' || IFNULL(cardDetails.description, ''), ';') as cardDetails,
+GROUP_CONCAT(cardDetails.id || '||,' || cardDetails.evolvedStage || '||,' || cardDetails.attack || '||,' || cardDetails.health || '||,' || IFNULL(cardDetails.description, ''), '||;') as cardDetails,
 GROUP_CONCAT(DISTINCT abilities.id) as abilityIds
 FROM cards LEFT JOIN cardDetails ON cards.id = cardDetails.cardId
 LEFT JOIN cardPacks ON cards.cardPackId = cardPacks.id
@@ -613,7 +613,7 @@ WHERE cards.id = $id`;
 
   // 将卡片详情字符串解析成对象数组
   // @ts-ignore
-  result.cardDetails = result.cardDetails?.split(';').map((detail) => {
+  result.cardDetails = result.cardDetails?.split('||;').map((detail) => {
     const [cardDetailsId, evolvedStage, attack, health, description] =
       detail.split('||,');
     return {
